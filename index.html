@@ -546,24 +546,6 @@
         background: #ef4444; color: white; border-color: #ef4444;
     }
 
-    /* انتخاب امتیاز */
-    .points-selector { display: flex; gap: 6px; }
-    .point-btn {
-        flex: 1; padding: 10px;
-        border: 2px solid var(--border);
-        border-radius: 8px;
-        background: var(--card);
-        cursor: pointer;
-        font-family: inherit;
-        font-size: 15px; font-weight: bold;
-        transition: all 0.15s;
-    }
-    .point-btn.active {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
-    }
-
     /* دلایل سریع */
     .quick-reasons {
         display: flex; flex-wrap: wrap;
@@ -731,8 +713,7 @@
     .hw-status-btn:hover { border-color: var(--primary); transform: scale(1.05); }
     .hw-status-btn.selected[data-status="done"] { background: #10b981; border-color: #10b981; color: white; }
     .hw-status-btn.selected[data-status="notdone"] { background: #ef4444; border-color: #ef4444; color: white; }
-    .hw-status-btn.selected[data-status="late"] { background: #f59e0b; border-color: #f59e0b; color: white; }
-    .hw-status-btn.selected[data-status="excused"] { background: #3b82f6; border-color: #3b82f6; color: white; }
+    .hw-status-btn.selected[data-status="partial"] { background: #f59e0b; border-color: #f59e0b; color: white; }
 
     /* نوار پیشرفت */
     .hw-progress {
@@ -1302,21 +1283,14 @@
                     <div class="dash-icon" style="background:#d1fae5;">🌟</div>
                     <div class="dash-info">
                         <div class="dash-value" id="bhPositiveTotal" style="color:#10b981;">0</div>
-                        <div class="dash-label">مجموع مثبت</div>
+                        <div class="dash-label">رفتار مثبت</div>
                     </div>
                 </div>
                 <div class="dash-card">
                     <div class="dash-icon" style="background:#fee2e2;">⚠️</div>
                     <div class="dash-info">
                         <div class="dash-value" id="bhNegativeTotal" style="color:#ef4444;">0</div>
-                        <div class="dash-label">مجموع منفی</div>
-                    </div>
-                </div>
-                <div class="dash-card">
-                    <div class="dash-icon" style="background:#dbeafe;">🎯</div>
-                    <div class="dash-info">
-                        <div class="dash-value" id="bhNetTotal" style="color:#2563eb;">0</div>
-                        <div class="dash-label">امتیاز کل</div>
+                        <div class="dash-label">رفتار منفی</div>
                     </div>
                 </div>
                 <div class="dash-card">
@@ -1400,17 +1374,10 @@
                         </div>
                     </div>
                     <div class="dash-card">
-                        <div class="dash-icon" style="background:#fef3c7;">⏰</div>
+                        <div class="dash-icon" style="background:#fef3c7;">🟡</div>
                         <div class="dash-info">
-                            <div class="dash-value" id="hwLateCount" style="color:#f59e0b;">0</div>
-                            <div class="dash-label">با تأخیر</div>
-                        </div>
-                    </div>
-                    <div class="dash-card">
-                        <div class="dash-icon" style="background:#dbeafe;">🏥</div>
-                        <div class="dash-info">
-                            <div class="dash-value" id="hwExcusedCount" style="color:#3b82f6;">0</div>
-                            <div class="dash-label">مرخصی</div>
+                            <div class="dash-value" id="hwPartialCount" style="color:#f59e0b;">0</div>
+                            <div class="dash-label">ناقص انجام داده</div>
                         </div>
                     </div>
                     <div class="dash-card">
@@ -1773,17 +1740,6 @@
             <div class="type-selector">
                 <button type="button" class="type-btn active" data-type="positive">🌟 مثبت</button>
                 <button type="button" class="type-btn" data-type="negative">⚠️ منفی</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">امتیاز (۱ تا ۵)</label>
-            <div class="points-selector">
-                <button type="button" class="point-btn" data-points="1">۱</button>
-                <button type="button" class="point-btn active" data-points="2">۲</button>
-                <button type="button" class="point-btn" data-points="3">۳</button>
-                <button type="button" class="point-btn" data-points="4">۴</button>
-                <button type="button" class="point-btn" data-points="5">۵</button>
             </div>
         </div>
 
@@ -3439,9 +3395,8 @@
         html += '<th style="width:150px;">نام و نام خانوادگی</th>';
         dates.forEach(function(d) {
             var parts = d.split('/');
-            html += '<th style="min-width:44px;">' + parts[1] + '/' + parts[2] + '</th>';
+            html += '<th style="min-width:62px;">' + parts[1] + '/' + parts[2] + '</th>';
         });
-        html += '<th style="width:100px;">جمع‌بندی</th>';
         html += '</tr></thead><tbody>';
 
         students.forEach(function(s, i) {
@@ -3450,27 +3405,17 @@
             html += '<td>' + escapeHtml(s.codemelli || '') + '</td>';
             html += '<td class="name">' + escapeHtml((s.family || '') + ' ' + (s.name || '')) + '</td>';
 
-            var sum = 0, count = 0;
             dates.forEach(function(d) {
                 var lvl = dateMap[d][s.id];
                 if (lvl !== undefined && lvl !== null) {
                     var n = parseInt(lvl);
-                    html += '<td class="lv' + n + '">' + n + '</td>';
-                    sum += n; count++;
+                    var lbl = DESC_LEVELS[n] ? DESC_LEVELS[n].label : '—';
+                    html += '<td class="lv' + n + '">' + lbl + '</td>';
                 } else {
                     html += '<td class="empty">—</td>';
                 }
             });
 
-            var summary = '—';
-            if (count > 0) {
-                var avg = sum / count;
-                var avgLvl = Math.round(avg);
-                if (avgLvl < 1) avgLvl = 1;
-                if (avgLvl > 4) avgLvl = 4;
-                summary = DESC_LEVELS[avgLvl].label;
-            }
-            html += '<td style="font-weight:bold;font-size:' + (fontSize + 0.5) + 'pt;">' + summary + '</td>';
             html += '</tr>';
         });
 
@@ -3543,36 +3488,25 @@
         html += '<th style="width:120px;">درس</th>';
         dates.forEach(function(d) {
             var parts = d.split('/');
-            html += '<th style="min-width:44px;">' + parts[1] + '/' + parts[2] + '</th>';
+            html += '<th style="min-width:62px;">' + parts[1] + '/' + parts[2] + '</th>';
         });
-        html += '<th style="width:110px;">جمع‌بندی</th>';
         html += '</tr></thead><tbody>';
 
         subjectsWithData.forEach(function(subj) {
             html += '<tr>';
             html += '<td class="sub-name">' + escapeHtml(subj) + '</td>';
 
-            var sum = 0, count = 0;
             dates.forEach(function(d) {
                 var lvl = subjectMap[subj][d];
                 if (lvl !== undefined && lvl !== null) {
                     var n = parseInt(lvl);
-                    html += '<td class="lv' + n + '">' + n + '</td>';
-                    sum += n; count++;
+                    var lbl = DESC_LEVELS[n] ? DESC_LEVELS[n].label : '—';
+                    html += '<td class="lv' + n + '">' + lbl + '</td>';
                 } else {
                     html += '<td class="empty">—</td>';
                 }
             });
 
-            var summary = '—';
-            if (count > 0) {
-                var avg = sum / count;
-                var avgLvl = Math.round(avg);
-                if (avgLvl < 1) avgLvl = 1;
-                if (avgLvl > 4) avgLvl = 4;
-                summary = DESC_LEVELS[avgLvl].label;
-            }
-            html += '<td style="font-weight:bold;font-size:' + (fontSize + 0.5) + 'pt;">' + summary + '</td>';
             html += '</tr>';
         });
 
@@ -3699,43 +3633,32 @@
 
         records.forEach(function(r) {
             if (!stats[r.studentId]) return;
-            if (r.type === 'positive') stats[r.studentId].positive += r.points;
-            else stats[r.studentId].negative += r.points;
+            if (r.type === 'positive') stats[r.studentId].positive++;
+            else stats[r.studentId].negative++;
             stats[r.studentId].count++;
         });
 
-        // محاسبهٔ مجموع
-        var totalPos = 0, totalNeg = 0, totalCount = records.length;
+        // محاسبهٔ مجموع (تعداد ثبت‌ها)
+        var totalPos = 0, totalNeg = 0, totalCount = 0;
         Object.keys(stats).forEach(function(sid) {
             totalPos += stats[sid].positive;
             totalNeg += stats[sid].negative;
+            totalCount += stats[sid].count;
         });
-        var totalNet = totalPos - totalNeg;
 
         var e1 = document.getElementById('bhPositiveTotal');
         var e2 = document.getElementById('bhNegativeTotal');
-        var e3 = document.getElementById('bhNetTotal');
         var e4 = document.getElementById('bhRecordsCount');
         if (e1) e1.textContent = toPersianNum(totalPos);
         if (e2) e2.textContent = toPersianNum(totalNeg);
-        if (e3) {
-            e3.textContent = toPersianNum(totalNet);
-            e3.style.color = totalNet > 0 ? '#10b981' : (totalNet < 0 ? '#ef4444' : '#2563eb');
-        }
         if (e4) e4.textContent = toPersianNum(totalCount);
 
-        // مرتب‌سازی: امتیاز خالص نزولی
-        var sortedStudents = students.slice().sort(function(a, b) {
-            var netA = stats[a.id].positive - stats[a.id].negative;
-            var netB = stats[b.id].positive - stats[b.id].negative;
-            return netB - netA;
-        });
+        // ترتیب همان ترتیب لیست کلاس
+        var sortedStudents = students.slice();
 
         var html = '<div class="card" style="padding:0;">';
         sortedStudents.forEach(function(s, i) {
             var st = stats[s.id];
-            var net = st.positive - st.negative;
-            var netColor = net > 0 ? 'positive' : (net < 0 ? 'negative' : 'net');
 
             html += '<div class="behavior-row" data-sid="' + s.id + '">';
             html += '<div class="att-num">' + toPersianNum(i + 1) + '</div>';
@@ -3744,9 +3667,8 @@
             if (s.codemelli) html += '<div class="att-code">' + escapeHtml(s.codemelli) + '</div>';
             html += '</div>';
             html += '<div class="behavior-scores">';
-            html += '<div class="score-badge positive" title="مجموع مثبت"><div class="sb-num">' + toPersianNum(st.positive) + '</div><div class="sb-label">مثبت</div></div>';
-            html += '<div class="score-badge negative" title="مجموع منفی"><div class="sb-num">' + toPersianNum(st.negative) + '</div><div class="sb-label">منفی</div></div>';
-            html += '<div class="score-badge ' + netColor + '" title="امتیاز خالص"><div class="sb-num">' + toPersianNum(net) + '</div><div class="sb-label">خالص</div></div>';
+            html += '<div class="score-badge positive" title="تعداد رفتار مثبت"><div class="sb-num">' + toPersianNum(st.positive) + '</div><div class="sb-label">مثبت</div></div>';
+            html += '<div class="score-badge negative" title="تعداد رفتار منفی"><div class="sb-num">' + toPersianNum(st.negative) + '</div><div class="sb-label">منفی</div></div>';
             html += '</div>';
             html += '</div>';
         });
@@ -3783,24 +3705,22 @@
         } else {
             var totalPos = 0, totalNeg = 0;
             records.forEach(function(r) {
-                if (r.type === 'positive') totalPos += r.points;
-                else totalNeg += r.points;
+                if (r.type === 'positive') totalPos++;
+                else totalNeg++;
             });
 
             var h = '<div style="margin-bottom:12px;padding:10px;background:var(--bg);border-radius:8px;display:flex;justify-content:space-around;text-align:center;">';
-            h += '<div><div style="color:#10b981;font-size:20px;font-weight:bold;">' + toPersianNum(totalPos) + '</div><div style="font-size:11px;color:var(--text-muted);">مجموع مثبت</div></div>';
-            h += '<div><div style="color:#ef4444;font-size:20px;font-weight:bold;">' + toPersianNum(totalNeg) + '</div><div style="font-size:11px;color:var(--text-muted);">مجموع منفی</div></div>';
-            h += '<div><div style="color:var(--primary-dark);font-size:20px;font-weight:bold;">' + toPersianNum(totalPos - totalNeg) + '</div><div style="font-size:11px;color:var(--text-muted);">خالص</div></div>';
+            h += '<div><div style="color:#10b981;font-size:20px;font-weight:bold;">' + toPersianNum(totalPos) + '</div><div style="font-size:11px;color:var(--text-muted);">رفتار مثبت</div></div>';
+            h += '<div><div style="color:#ef4444;font-size:20px;font-weight:bold;">' + toPersianNum(totalNeg) + '</div><div style="font-size:11px;color:var(--text-muted);">رفتار منفی</div></div>';
             h += '</div>';
 
             records.forEach(function(r) {
-                var sign = r.type === 'positive' ? '+' : '−';
                 var pointsCls = r.type === 'positive' ? 'pos' : 'neg';
                 h += '<div class="behavior-log-item ' + r.type + '">';
                 h += '<div class="bl-date">' + escapeHtml(r.date) + '</div>';
                 h += '<div class="bl-body">';
                 h += '<div class="bl-reason">' + escapeHtml(r.reason || (r.type === 'positive' ? 'رفتار مثبت' : 'رفتار منفی')) + '</div>';
-                h += '<div class="bl-points ' + pointsCls + '">' + sign + ' ' + toPersianNum(r.points) + ' امتیاز</div>';
+                h += '<div class="bl-points ' + pointsCls + '">' + (r.type === 'positive' ? '🌟 رفتار مثبت' : '⚠️ رفتار منفی') + '</div>';
                 h += '</div>';
                 h += '<button class="bl-delete" data-bid="' + r.id + '" title="حذف">🗑️</button>';
                 h += '</div>';
@@ -3826,7 +3746,6 @@
 
     // ═══ مودال ثبت رفتار ═══
     var behaviorFormType = 'positive';
-    var behaviorFormPoints = 2;
 
     function openBehaviorModal(preStudentId) {
         if (currentBehaviorClass < 0) { alert('ابتدا یک کلاس انتخاب کنید.'); return; }
@@ -3846,12 +3765,8 @@
         document.getElementById('behaviorReason').value = '';
 
         behaviorFormType = 'positive';
-        behaviorFormPoints = 2;
         document.querySelectorAll('.type-btn').forEach(function(b) {
             b.classList.toggle('active', b.getAttribute('data-type') === 'positive');
-        });
-        document.querySelectorAll('.point-btn').forEach(function(b) {
-            b.classList.toggle('active', b.getAttribute('data-points') === '2');
         });
 
         renderQuickReasons();
@@ -3885,14 +3800,6 @@
         });
     });
 
-    document.querySelectorAll('.point-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.point-btn').forEach(function(b) { b.classList.remove('active'); });
-            btn.classList.add('active');
-            behaviorFormPoints = parseInt(btn.getAttribute('data-points'));
-        });
-    });
-
     document.getElementById('btnAddBehavior').addEventListener('click', function() {
         openBehaviorModal();
     });
@@ -3915,7 +3822,6 @@
             studentId: studentId,
             date: date,
             type: behaviorFormType,
-            points: behaviorFormPoints,
             reason: reason
         });
         saveBehaviors();
@@ -3941,8 +3847,8 @@
         });
         records.forEach(function(r) {
             if (!stats[r.studentId]) return;
-            if (r.type === 'positive') stats[r.studentId].positive += r.points;
-            else stats[r.studentId].negative += r.points;
+            if (r.type === 'positive') stats[r.studentId].positive++;
+            else stats[r.studentId].negative++;
             stats[r.studentId].count++;
             stats[r.studentId].records.push(r);
         });
@@ -3961,7 +3867,6 @@
         html += 'td.name { text-align: right; padding-right: 8px; font-weight: 600; }';
         html += 'td.pos { color: #10b981; font-weight: bold; }';
         html += 'td.neg { color: #ef4444; font-weight: bold; }';
-        html += 'td.net { font-weight: bold; }';
         html += '</style></head><body>';
         html += '<div class="h">گزارش رفتار کلاس ' + escapeHtml(cls.className) + '</div>';
         html += '<div class="sub">';
@@ -3969,22 +3874,19 @@
         if (behaviorFilterTo) html += 'تا: ' + behaviorFilterTo + ' &nbsp; ';
         html += '| تعداد ثبت: ' + records.length;
         html += '</div>';
-        html += '<table><colgroup><col style="width:6%;"><col style="width:14%;"><col style="width:34%;"><col style="width:12%;"><col style="width:12%;"><col style="width:12%;"><col style="width:10%;"></colgroup>';
+        html += '<table><colgroup><col style="width:6%;"><col style="width:16%;"><col style="width:42%;"><col style="width:12%;"><col style="width:12%;"><col style="width:12%;"></colgroup>';
         html += '<thead><tr>';
         html += '<th>#</th><th>کد ملی</th><th>نام و نام خانوادگی</th>';
-        html += '<th>مثبت</th><th>منفی</th><th>خالص</th><th>تعداد</th>';
+        html += '<th>رفتار مثبت</th><th>رفتار منفی</th><th>کل ثبت‌ها</th>';
         html += '</tr></thead><tbody>';
         students.forEach(function(s, i) {
             var stt = stats[s.id];
-            var net = stt.positive - stt.negative;
-            var netCls = net > 0 ? 'pos' : (net < 0 ? 'neg' : '');
             html += '<tr>';
             html += '<td>' + (i + 1) + '</td>';
             html += '<td>' + escapeHtml(s.codemelli || '') + '</td>';
             html += '<td class="name">' + escapeHtml((s.family || '') + ' ' + (s.name || '')) + '</td>';
             html += '<td class="pos">' + stt.positive + '</td>';
             html += '<td class="neg">' + stt.negative + '</td>';
-            html += '<td class="net ' + netCls + '">' + net + '</td>';
             html += '<td>' + stt.count + '</td>';
             html += '</tr>';
         });
@@ -3994,9 +3896,9 @@
         var totPos = 0, totNeg = 0;
         students.forEach(function(s) { totPos += stats[s.id].positive; totNeg += stats[s.id].negative; });
         html += '<div style="margin-top:12px;padding:8px;background:#f5f5f5;border-radius:6px;font-size:' + st.fontSize + 'pt;">';
-        html += '<b>مجموع مثبت:</b> ' + totPos + ' &nbsp; | &nbsp; ';
-        html += '<b>مجموع منفی:</b> ' + totNeg + ' &nbsp; | &nbsp; ';
-        html += '<b>خالص کلاس:</b> ' + (totPos - totNeg);
+        html += '<b>رفتار مثبت:</b> ' + totPos + ' &nbsp; | &nbsp; ';
+        html += '<b>رفتار منفی:</b> ' + totNeg + ' &nbsp; | &nbsp; ';
+        html += '<b>کل ثبت‌ها:</b> ' + (totPos + totNeg);
         html += '</div>';
 
         html += '</body></html>';
@@ -4074,15 +3976,29 @@
     var HW_STATUS = {
         'done': { label: 'انجام داده', icon: '✅' },
         'notdone': { label: 'انجام نداده', icon: '❌' },
-        'late': { label: 'با تأخیر', icon: '⏰' },
-        'excused': { label: 'مرخصی', icon: '🏥' }
+        'partial': { label: 'ناقص انجام داده', icon: '🟡' }
     };
+
+    // سازگاری با دادهٔ قدیمی: «با تأخیر» ← انجام داده، «مرخصی» ← بدون وضعیت
+    function migrateHomeworkStatuses() {
+        Object.keys(homeworkData || {}).forEach(function(cn) {
+            (homeworkData[cn] || []).forEach(function(h) {
+                if (!h.status) return;
+                Object.keys(h.status).forEach(function(sid) {
+                    var v = h.status[sid];
+                    if (v === 'late') h.status[sid] = 'done';
+                    else if (v === 'excused') delete h.status[sid];
+                });
+            });
+        });
+    }
 
     function loadHomework() {
         try {
             var raw = localStorage.getItem(HOMEWORK_STORAGE_KEY);
             if (raw) homeworkData = JSON.parse(raw);
         } catch(e) { homeworkData = {}; }
+        migrateHomeworkStatuses();
     }
 
     function saveHomework() {
@@ -4156,12 +4072,13 @@
         var html = '<div class="hw-list">';
         filtered.forEach(function(h) {
             var statuses = h.status || {};
-            var done = 0, pending = 0;
+            var done = 0, pending = 0, partial = 0;
             Object.keys(statuses).forEach(function(sid) {
-                if (statuses[sid] === 'done' || statuses[sid] === 'late') done++;
+                if (statuses[sid] === 'done') done++;
+                else if (statuses[sid] === 'partial') partial++;
                 else if (statuses[sid] === 'notdone') pending++;
             });
-            var noRecord = totalStudents - done - pending;
+            var noRecord = totalStudents - done - pending - partial;
             var percent = totalStudents > 0 ? Math.round((done / totalStudents) * 100) : 0;
 
             html += '<div class="hw-card" data-hw-id="' + h.id + '">';
@@ -4177,6 +4094,7 @@
             html += '<span class="hw-card-date">📅 تحویل: ' + escapeHtml(h.dueDate) + '</span>';
             html += '<div class="hw-card-stats">';
             html += '<span class="hw-stat-done">✅ ' + toPersianNum(done) + '</span>';
+            if (partial > 0) html += '<span style="color:#f59e0b;font-weight:600;">🟡 ' + toPersianNum(partial) + '</span>';
             if (pending > 0) html += '<span class="hw-stat-pending">❌ ' + toPersianNum(pending) + '</span>';
             if (noRecord > 0) html += '<span style="color:var(--text-muted);">⏳ ' + toPersianNum(noRecord) + '</span>';
             html += '</div>';
@@ -4254,31 +4172,7 @@
         }
 
         // آمار
-        var counts = { done: 0, notdone: 0, late: 0, excused: 0, none: 0 };
-        students.forEach(function(s) {
-            var st = statuses[s.id] || '';
-            if (st === 'done') counts.done++;
-            else if (st === 'notdone') counts.notdone++;
-            else if (st === 'late') counts.late++;
-            else if (st === 'excused') counts.excused++;
-            else counts.none++;
-        });
-
-        var e1 = document.getElementById('hwDoneCount');
-        var e2 = document.getElementById('hwNotDoneCount');
-        var e3 = document.getElementById('hwLateCount');
-        var e4 = document.getElementById('hwExcusedCount');
-        var e5 = document.getElementById('hwProgressText');
-
-        if (e1) e1.textContent = toPersianNum(counts.done);
-        if (e2) e2.textContent = toPersianNum(counts.notdone);
-        if (e3) e3.textContent = toPersianNum(counts.late);
-        if (e4) e4.textContent = toPersianNum(counts.excused);
-        if (e5) {
-            var total = students.length;
-            var percent = total > 0 ? Math.round(((counts.done + counts.late) / total) * 100) : 0;
-            e5.textContent = toPersianNum(percent) + '٪';
-        }
+        renderHomeworkDetailStats(cls, hw);
 
         // لیست دانش‌آموزان
         var container = document.getElementById('hwStudentsContainer');
@@ -4299,7 +4193,7 @@
             if (s.codemelli) html += '<div class="att-code">' + escapeHtml(s.codemelli) + '</div>';
             html += '</div>';
             html += '<div class="hw-status-actions">';
-            ['done', 'notdone', 'late', 'excused'].forEach(function(key) {
+            ['done', 'notdone', 'partial'].forEach(function(key) {
                 var sel = (st === key) ? ' selected' : '';
                 html += '<button class="hw-status-btn' + sel + '" data-status="' + key + '" title="' + HW_STATUS[key].label + '">' + HW_STATUS[key].icon + '</button>';
             });
@@ -4336,7 +4230,7 @@
     function renderHomeworkDetailStats(cls, hw) {
         var students = cls.students || [];
         var statuses = hw.status || {};
-        var counts = { done: 0, notdone: 0, late: 0, excused: 0 };
+        var counts = { done: 0, notdone: 0, partial: 0 };
 
         students.forEach(function(s) {
             var st = statuses[s.id] || '';
@@ -4345,17 +4239,15 @@
 
         var e1 = document.getElementById('hwDoneCount');
         var e2 = document.getElementById('hwNotDoneCount');
-        var e3 = document.getElementById('hwLateCount');
-        var e4 = document.getElementById('hwExcusedCount');
+        var e3 = document.getElementById('hwPartialCount');
         var e5 = document.getElementById('hwProgressText');
 
         if (e1) e1.textContent = toPersianNum(counts.done);
         if (e2) e2.textContent = toPersianNum(counts.notdone);
-        if (e3) e3.textContent = toPersianNum(counts.late);
-        if (e4) e4.textContent = toPersianNum(counts.excused);
+        if (e3) e3.textContent = toPersianNum(counts.partial);
         if (e5) {
             var total = students.length;
-            var percent = total > 0 ? Math.round(((counts.done + counts.late) / total) * 100) : 0;
+            var percent = total > 0 ? Math.round((counts.done / total) * 100) : 0;
             e5.textContent = toPersianNum(percent) + '٪';
         }
     }
@@ -4518,8 +4410,7 @@
         html += 'td.name { text-align: right; padding-right: 8px; font-weight: 600; }';
         html += 'td.done { color: #10b981; font-weight: bold; }';
         html += 'td.notdone { color: #ef4444; font-weight: bold; }';
-        html += 'td.late { color: #f59e0b; font-weight: bold; }';
-        html += 'td.excused { color: #3b82f6; font-weight: bold; }';
+        html += 'td.partial { color: #f59e0b; font-weight: bold; }';
         html += '</style></head><body>';
         html += '<div class="h">گزارش تکلیف - ' + escapeHtml(cls.className) + '</div>';
         html += '<div class="info">';
@@ -4531,7 +4422,7 @@
         html += '<thead><tr><th>#</th><th>کد ملی</th><th>نام و نام خانوادگی</th><th>وضعیت</th></tr></thead><tbody>';
         students.forEach(function(s, i) {
             var stat = statuses[s.id] || '';
-            var label = stat ? HW_STATUS[stat].label : '—';
+            var label = (stat && HW_STATUS[stat]) ? HW_STATUS[stat].label : '—';
             var cls2 = stat || '';
             html += '<tr>';
             html += '<td>' + (i + 1) + '</td>';
@@ -4542,13 +4433,12 @@
         });
         html += '</tbody></table>';
 
-        var cnt = { done: 0, notdone: 0, late: 0, excused: 0 };
+        var cnt = { done: 0, notdone: 0, partial: 0 };
         students.forEach(function(s) { if (cnt[statuses[s.id]] !== undefined) cnt[statuses[s.id]]++; });
         html += '<div style="margin-top:12px;padding:8px;background:#f5f5f5;border-radius:6px;font-size:' + st.fontSize + 'pt;">';
         html += '<b>انجام داده:</b> ' + cnt.done + ' &nbsp; | &nbsp; ';
-        html += '<b>انجام نداده:</b> ' + cnt.notdone + ' &nbsp; | &nbsp; ';
-        html += '<b>با تأخیر:</b> ' + cnt.late + ' &nbsp; | &nbsp; ';
-        html += '<b>مرخصی:</b> ' + cnt.excused;
+        html += '<b>ناقص انجام داده:</b> ' + cnt.partial + ' &nbsp; | &nbsp; ';
+        html += '<b>انجام نداده:</b> ' + cnt.notdone;
         html += '</div>';
 
         html += '</body></html>';
@@ -4604,7 +4494,7 @@
             // رفتار
             behavior: { positive: 0, negative: 0, count: 0 },
             // تکالیف
-            homework: { done: 0, notdone: 0, late: 0, excused: 0, total: 0 }
+            homework: { done: 0, notdone: 0, partial: 0, total: 0 }
         };
 
         // ===== نمرات =====
@@ -4654,8 +4544,8 @@
         behaviors.forEach(function(b) {
             if (b.studentId !== student.id) return;
             if (!isInDateRange(b.date, reportFilterFrom, reportFilterTo)) return;
-            if (b.type === 'positive') stats.behavior.positive += b.points;
-            else stats.behavior.negative += b.points;
+            if (b.type === 'positive') stats.behavior.positive++;
+            else stats.behavior.negative++;
             stats.behavior.count++;
         });
 
@@ -4667,8 +4557,7 @@
             var st = h.status && h.status[student.id];
             if (st === 'done') stats.homework.done++;
             else if (st === 'notdone') stats.homework.notdone++;
-            else if (st === 'late') stats.homework.late++;
-            else if (st === 'excused') stats.homework.excused++;
+            else if (st === 'partial') stats.homework.partial++;
         });
 
         return stats;
@@ -4695,6 +4584,7 @@
         score -= stats.behavior.negative * 0.8;
         // تکالیف
         score += stats.homework.done * 0.5;
+        score += stats.homework.partial * 0.25;
         score -= stats.homework.notdone * 0.8;
         return Math.round(score * 100) / 100;
     }
@@ -4779,7 +4669,7 @@
         html += '<div class="ssc-stats">';
         html += '<div class="ssc-stat"><div class="ssc-stat-value">' + toPersianNum(stats.attendance.present) + '</div><div class="ssc-stat-label">حاضر</div></div>';
         html += '<div class="ssc-stat"><div class="ssc-stat-value">' + toPersianNum(stats.attendance.absent) + '</div><div class="ssc-stat-label">غایب</div></div>';
-        html += '<div class="ssc-stat"><div class="ssc-stat-value">' + toPersianNum(stats.behavior.positive - stats.behavior.negative) + '</div><div class="ssc-stat-label">رفتار خالص</div></div>';
+        html += '<div class="ssc-stat"><div class="ssc-stat-value">' + toPersianNum(stats.behavior.positive) + ' / ' + toPersianNum(stats.behavior.negative) + '</div><div class="ssc-stat-label">رفتار مثبت / منفی</div></div>';
         html += '<div class="ssc-stat"><div class="ssc-stat-value">' + toPersianNum(stats.homework.done) + '/' + toPersianNum(stats.homework.total) + '</div><div class="ssc-stat-label">تکالیف</div></div>';
         html += '<div class="ssc-stat"><div class="ssc-stat-value" style="font-size:14px;">' + avgLabel + '</div><div class="ssc-stat-label">میانگین نمرات</div></div>';
         html += '</div>';
@@ -4792,7 +4682,7 @@
             html += '<div class="report-empty">نمره‌ای در این بازه ثبت نشده</div>';
         } else {
             html += '<table class="report-mini-table"><thead><tr>';
-            html += '<th>درس</th><th>تعداد ثبت</th><th>میانگین</th><th>ارزیابی کلی</th>';
+            html += '<th>درس</th><th>تعداد ثبت</th><th>ارزیابی کلی</th>';
             html += '</tr></thead><tbody>';
             Object.keys(stats.grades).forEach(function(subj) {
                 var g = stats.grades[subj];
@@ -4803,7 +4693,6 @@
                 html += '<tr>';
                 html += '<td>' + getSubjectIcon(subj) + ' ' + escapeHtml(subj) + '</td>';
                 html += '<td>' + toPersianNum(g.levels.length) + '</td>';
-                html += '<td style="font-family:monospace;">' + toPersianNum(g.avgLevel.toFixed(2)) + '</td>';
                 html += '<td style="color:' + lvlColor + ';font-weight:bold;">' + DESC_LEVELS[lvl].label + '</td>';
                 html += '</tr>';
             });
@@ -4834,10 +4723,9 @@
             html += '<div class="report-empty">رفتاری در این بازه ثبت نشده</div>';
         } else {
             html += '<div class="compare-grid">';
-            html += '<div class="compare-card"><div class="compare-card-title">🌟 مجموع مثبت</div><div class="compare-card-value" style="color:#10b981;">' + toPersianNum(stats.behavior.positive) + '</div></div>';
-            html += '<div class="compare-card"><div class="compare-card-title">⚠️ مجموع منفی</div><div class="compare-card-value" style="color:#ef4444;">' + toPersianNum(stats.behavior.negative) + '</div></div>';
-            html += '<div class="compare-card"><div class="compare-card-title">🎯 خالص</div><div class="compare-card-value">' + toPersianNum(stats.behavior.positive - stats.behavior.negative) + '</div></div>';
-            html += '<div class="compare-card"><div class="compare-card-title">📋 تعداد ثبت</div><div class="compare-card-value">' + toPersianNum(stats.behavior.count) + '</div></div>';
+            html += '<div class="compare-card"><div class="compare-card-title">🌟 رفتار مثبت</div><div class="compare-card-value" style="color:#10b981;">' + toPersianNum(stats.behavior.positive) + '</div></div>';
+            html += '<div class="compare-card"><div class="compare-card-title">⚠️ رفتار منفی</div><div class="compare-card-value" style="color:#ef4444;">' + toPersianNum(stats.behavior.negative) + '</div></div>';
+            html += '<div class="compare-card"><div class="compare-card-title">📋 کل ثبت‌ها</div><div class="compare-card-value">' + toPersianNum(stats.behavior.count) + '</div></div>';
             html += '</div>';
         }
         html += '</div>';
@@ -4850,8 +4738,8 @@
         } else {
             html += '<div class="compare-grid">';
             html += '<div class="compare-card"><div class="compare-card-title">✅ انجام داده</div><div class="compare-card-value" style="color:#10b981;">' + toPersianNum(stats.homework.done) + '</div></div>';
+            html += '<div class="compare-card"><div class="compare-card-title">🟡 ناقص انجام داده</div><div class="compare-card-value" style="color:#f59e0b;">' + toPersianNum(stats.homework.partial) + '</div></div>';
             html += '<div class="compare-card"><div class="compare-card-title">❌ انجام نداده</div><div class="compare-card-value" style="color:#ef4444;">' + toPersianNum(stats.homework.notdone) + '</div></div>';
-            html += '<div class="compare-card"><div class="compare-card-title">⏰ با تأخیر</div><div class="compare-card-value" style="color:#f59e0b;">' + toPersianNum(stats.homework.late) + '</div></div>';
             html += '<div class="compare-card"><div class="compare-card-title">📊 درصد انجام</div><div class="compare-card-value">' + toPersianNum(stats.homework.total > 0 ? Math.round((stats.homework.done / stats.homework.total) * 100) : 0) + '٪</div></div>';
             html += '</div>';
         }
@@ -4890,7 +4778,7 @@
             gradesLevel: { 1: 0, 2: 0, 3: 0, 4: 0 },
             att: { present: 0, absent: 0, late: 0, excused: 0 },
             behavior: { positive: 0, negative: 0 },
-            homework: { done: 0, notdone: 0, late: 0, excused: 0, total: 0 }
+            homework: { done: 0, notdone: 0, partial: 0, total: 0 }
         };
 
         students.forEach(function(s) {
@@ -4909,8 +4797,7 @@
             totals.behavior.negative += st.behavior.negative;
             totals.homework.done += st.homework.done;
             totals.homework.notdone += st.homework.notdone;
-            totals.homework.late += st.homework.late;
-            totals.homework.excused += st.homework.excused;
+            totals.homework.partial += st.homework.partial;
             totals.homework.total += st.homework.total;
         });
 
@@ -4947,9 +4834,9 @@
         html += '<div class="report-section">';
         html += '<div class="report-section-title">🎯 رفتار کلاس</div>';
         html += '<div class="compare-grid">';
-        html += '<div class="compare-card"><div class="compare-card-title">🌟 مجموع مثبت</div><div class="compare-card-value" style="color:#10b981;">' + toPersianNum(totals.behavior.positive) + '</div></div>';
-        html += '<div class="compare-card"><div class="compare-card-title">⚠️ مجموع منفی</div><div class="compare-card-value" style="color:#ef4444;">' + toPersianNum(totals.behavior.negative) + '</div></div>';
-        html += '<div class="compare-card"><div class="compare-card-title">🎯 خالص کلاس</div><div class="compare-card-value">' + toPersianNum(totals.behavior.positive - totals.behavior.negative) + '</div></div>';
+        html += '<div class="compare-card"><div class="compare-card-title">🌟 رفتار مثبت</div><div class="compare-card-value" style="color:#10b981;">' + toPersianNum(totals.behavior.positive) + '</div></div>';
+        html += '<div class="compare-card"><div class="compare-card-title">⚠️ رفتار منفی</div><div class="compare-card-value" style="color:#ef4444;">' + toPersianNum(totals.behavior.negative) + '</div></div>';
+        html += '<div class="compare-card"><div class="compare-card-title">📋 کل ثبت‌ها</div><div class="compare-card-value">' + toPersianNum(totals.behavior.positive + totals.behavior.negative) + '</div></div>';
         html += '</div>';
         html += '</div>';
 
@@ -4961,8 +4848,8 @@
         } else {
             html += '<div class="compare-grid">';
             html += '<div class="compare-card"><div class="compare-card-title">✅ انجام داده</div><div class="compare-card-value" style="color:#10b981;">' + toPersianNum(totals.homework.done) + '</div></div>';
+            html += '<div class="compare-card"><div class="compare-card-title">🟡 ناقص انجام داده</div><div class="compare-card-value" style="color:#f59e0b;">' + toPersianNum(totals.homework.partial) + '</div></div>';
             html += '<div class="compare-card"><div class="compare-card-title">❌ انجام نداده</div><div class="compare-card-value" style="color:#ef4444;">' + toPersianNum(totals.homework.notdone) + '</div></div>';
-            html += '<div class="compare-card"><div class="compare-card-title">⏰ با تأخیر</div><div class="compare-card-value" style="color:#f59e0b;">' + toPersianNum(totals.homework.late) + '</div></div>';
             html += '<div class="compare-card"><div class="compare-card-title">📊 درصد کلاس</div><div class="compare-card-value">' + toPersianNum(totals.homework.total > 0 ? Math.round((totals.homework.done / totals.homework.total) * 100) : 0) + '٪</div></div>';
             html += '</div>';
         }
@@ -5003,7 +4890,7 @@
         html += '<th style="text-align:center;">امتیاز</th>';
         html += '<th style="text-align:center;">نمرات</th>';
         html += '<th style="text-align:center;">حضور</th>';
-        html += '<th style="text-align:center;">رفتار</th>';
+        html += '<th style="text-align:center;">رفتار (مثبت / منفی)</th>';
         html += '<th style="text-align:center;">تکالیف</th>';
         html += '</tr></thead><tbody>';
 
@@ -5014,7 +4901,6 @@
             var attTotal = r.stats.attendance.present + r.stats.attendance.absent + r.stats.attendance.late;
             var attPercent = attTotal > 0 ? Math.round((r.stats.attendance.present / attTotal) * 100) : 0;
             var hwPercent = r.stats.homework.total > 0 ? Math.round((r.stats.homework.done / r.stats.homework.total) * 100) : 0;
-            var behNet = r.stats.behavior.positive - r.stats.behavior.negative;
 
             html += '<tr>';
             html += '<td style="text-align:center;"><span class="rank-badge' + rankCls + '">' + medal + '</span></td>';
@@ -5022,7 +4908,7 @@
             html += '<td style="text-align:center;font-weight:bold;color:var(--primary-dark);">' + toPersianNum(r.score) + '</td>';
             html += '<td style="text-align:center;font-family:monospace;">' + toPersianNum(r.stats.gradesCount) + '</td>';
             html += '<td style="text-align:center;">' + toPersianNum(attPercent) + '٪</td>';
-            html += '<td style="text-align:center;color:' + (behNet >= 0 ? '#10b981' : '#ef4444') + ';font-weight:bold;">' + (behNet > 0 ? '+' : '') + toPersianNum(behNet) + '</td>';
+            html += '<td style="text-align:center;font-weight:bold;"><span style="color:#10b981;">' + toPersianNum(r.stats.behavior.positive) + '</span> / <span style="color:#ef4444;">' + toPersianNum(r.stats.behavior.negative) + '</span></td>';
             html += '<td style="text-align:center;">' + toPersianNum(hwPercent) + '٪</td>';
             html += '</tr>';
         });
@@ -5165,7 +5051,7 @@
         if (Object.keys(stats.grades).length === 0) {
             html += '<div style="text-align:center;padding:10px;color:#999;">نمره‌ای ثبت نشده</div>';
         } else {
-            html += '<table><thead><tr><th>درس</th><th>تعداد ثبت</th><th>میانگین</th><th>ارزیابی کلی</th></tr></thead><tbody>';
+            html += '<table><thead><tr><th>درس</th><th>تعداد ثبت</th><th>ارزیابی کلی</th></tr></thead><tbody>';
             Object.keys(stats.grades).forEach(function(subj) {
                 var g = stats.grades[subj];
                 var lvl = Math.round(g.avgLevel);
@@ -5174,7 +5060,6 @@
                 html += '<tr>';
                 html += '<td class="name">' + escapeHtml(subj) + '</td>';
                 html += '<td>' + g.levels.length + '</td>';
-                html += '<td style="font-family:monospace;">' + g.avgLevel.toFixed(2) + '</td>';
                 html += '<td class="lv' + lvl + '">' + DESC_LEVELS[lvl].label + '</td>';
                 html += '</tr>';
             });
@@ -5197,11 +5082,10 @@
         // رفتار
         html += '<div class="section">';
         html += '<div class="section-title">🎯 رفتار</div>';
-        html += '<table><thead><tr><th>مجموع مثبت</th><th>مجموع منفی</th><th>خالص</th><th>تعداد ثبت</th></tr></thead><tbody>';
+        html += '<table><thead><tr><th>رفتار مثبت</th><th>رفتار منفی</th><th>کل ثبت‌ها</th></tr></thead><tbody>';
         html += '<tr>';
         html += '<td style="color:#10b981;font-weight:bold;">' + stats.behavior.positive + '</td>';
         html += '<td style="color:#ef4444;font-weight:bold;">' + stats.behavior.negative + '</td>';
-        html += '<td style="font-weight:bold;">' + (stats.behavior.positive - stats.behavior.negative) + '</td>';
         html += '<td>' + stats.behavior.count + '</td>';
         html += '</tr></tbody></table>';
         html += '</div>';
@@ -5210,12 +5094,11 @@
         if (stats.homework.total > 0) {
             html += '<div class="section">';
             html += '<div class="section-title">📖 تکالیف</div>';
-            html += '<table><thead><tr><th>انجام داده</th><th>انجام نداده</th><th>با تأخیر</th><th>مرخصی</th><th>درصد</th></tr></thead><tbody>';
+            html += '<table><thead><tr><th>انجام داده</th><th>ناقص انجام داده</th><th>انجام نداده</th><th>درصد انجام</th></tr></thead><tbody>';
             html += '<tr>';
             html += '<td style="color:#10b981;font-weight:bold;">' + stats.homework.done + '</td>';
+            html += '<td style="color:#f59e0b;font-weight:bold;">' + stats.homework.partial + '</td>';
             html += '<td style="color:#ef4444;font-weight:bold;">' + stats.homework.notdone + '</td>';
-            html += '<td style="color:#f59e0b;font-weight:bold;">' + stats.homework.late + '</td>';
-            html += '<td style="color:#3b82f6;font-weight:bold;">' + stats.homework.excused + '</td>';
             html += '<td style="font-weight:bold;">' + Math.round((stats.homework.done / stats.homework.total) * 100) + '٪</td>';
             html += '</tr></tbody></table>';
             html += '</div>';
@@ -5275,13 +5158,13 @@
             if (Object.keys(stats.grades).length === 0) {
                 html += '<div style="text-align:center;padding:10px;color:#999;">نمره‌ای ثبت نشده</div>';
             } else {
-                html += '<table><thead><tr><th>درس</th><th>میانگین</th><th>ارزیابی</th></tr></thead><tbody>';
+                html += '<table><thead><tr><th>درس</th><th>ارزیابی</th></tr></thead><tbody>';
                 Object.keys(stats.grades).forEach(function(subj) {
                     var g = stats.grades[subj];
                     var lvl = Math.round(g.avgLevel);
                     if (lvl < 1) lvl = 1;
                     if (lvl > 4) lvl = 4;
-                    html += '<tr><td class="name">' + escapeHtml(subj) + '</td><td style="font-family:monospace;">' + g.avgLevel.toFixed(2) + '</td><td class="lv' + lvl + '">' + DESC_LEVELS[lvl].label + '</td></tr>';
+                    html += '<tr><td class="name">' + escapeHtml(subj) + '</td><td class="lv' + lvl + '">' + DESC_LEVELS[lvl].label + '</td></tr>';
                 });
                 html += '</tbody></table>';
             }
@@ -5298,10 +5181,9 @@
 
             html += '<div class="section">';
             html += '<div class="section-title">🎯 رفتار</div>';
-            html += '<table><thead><tr><th>مثبت</th><th>منفی</th><th>خالص</th></tr></thead><tbody>';
+            html += '<table><thead><tr><th>رفتار مثبت</th><th>رفتار منفی</th></tr></thead><tbody>';
             html += '<tr><td style="color:#10b981;font-weight:bold;">' + stats.behavior.positive + '</td>';
-            html += '<td style="color:#ef4444;font-weight:bold;">' + stats.behavior.negative + '</td>';
-            html += '<td style="font-weight:bold;">' + (stats.behavior.positive - stats.behavior.negative) + '</td></tr>';
+            html += '<td style="color:#ef4444;font-weight:bold;">' + stats.behavior.negative + '</td></tr>';
             html += '</tbody></table></div>';
 
             html += '</div>';
@@ -5567,6 +5449,7 @@
 
                 if (parsed.homeworkData) {
                     homeworkData = parsed.homeworkData;
+                    migrateHomeworkStatuses();
                     localStorage.setItem(HOMEWORK_STORAGE_KEY, JSON.stringify(homeworkData));
                 }
 
