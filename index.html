@@ -306,21 +306,43 @@
     .desc-row:hover { background: var(--bg); }
     .desc-actions { display: flex; gap: 6px; flex-shrink: 0; }
     .desc-btn {
-        min-width: 46px; height: 46px;
+        min-width: 88px; height: 44px; padding: 0 8px;
         border: 2px solid var(--border);
         border-radius: 10px;
         background: var(--card);
         cursor: pointer;
-        font-size: 18px; font-weight: bold;
+        font-size: 13px; font-weight: 700;
         display: flex; align-items: center; justify-content: center;
-        transition: all 0.15s;
+        transition: all 0.12s;
         font-family: inherit;
+        color: var(--text-muted);
     }
-    .desc-btn:hover { border-color: var(--primary); transform: scale(1.05); }
+    .desc-btn[data-level="1"] { border-color: rgba(16,185,129,0.5); color: #059669; }
+    .desc-btn[data-level="2"] { border-color: rgba(59,130,246,0.5); color: #2563eb; }
+    .desc-btn[data-level="3"] { border-color: rgba(245,158,11,0.55); color: #d97706; }
+    .desc-btn[data-level="4"] { border-color: rgba(239,68,68,0.5); color: #dc2626; }
+    .desc-btn:active { transform: scale(0.96); }
     .desc-btn.selected[data-level="1"] { background: #10b981; border-color: #10b981; color: white; }
     .desc-btn.selected[data-level="2"] { background: #3b82f6; border-color: #3b82f6; color: white; }
     .desc-btn.selected[data-level="3"] { background: #f59e0b; border-color: #f59e0b; color: white; }
     .desc-btn.selected[data-level="4"] { background: #ef4444; border-color: #ef4444; color: white; }
+
+    .grade-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .gs-chip {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 600;
+    }
+    .grade-context {
+        font-size: 14px; font-weight: 700; margin-bottom: 8px;
+        padding: 8px 12px; background: var(--primary-light); color: var(--primary-dark);
+        border-radius: 8px;
+    }
+    .grade-date-info { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+    .year-select {
+        border: 1px solid var(--border); background: var(--bg); color: var(--text);
+        border-radius: 8px; padding: 6px 8px; font-size: 13px; font-weight: 600;
+        cursor: pointer; max-width: 140px;
+    }
 
     .desc-legend {
         display: flex; flex-wrap: wrap; gap: 10px;
@@ -344,109 +366,31 @@
     @media (max-width: 768px) {
         .desc-row { flex-wrap: wrap; padding: 10px; }
         .desc-actions { width: 100%; justify-content: space-between; }
-        .desc-btn { flex: 1; min-width: 0; }
+        .desc-btn { flex: 1; min-width: 0; font-size: 12px; padding: 0 2px; }
     }
 
     /* ═══════════════════════════════════════════════════
-       🎨 کارت‌های درس - زیبا و رنگی
+       🏷️ انتخاب درس (ساده و فشرده)
        ═══════════════════════════════════════════════════ */
-    #subjectsList {
-        display: grid !important;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 10px;
-        margin-top: 6px;
-    }
-
+    #subjectsList { display: flex !important; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
     .subject-chip {
-        position: relative;
-        padding: 12px 14px 12px 36px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.25s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
-        overflow: hidden;
-        min-height: 48px;
-        text-align: right;
-        user-select: none;
+        position: relative; display: inline-flex; align-items: center; gap: 6px;
+        padding: 8px 14px; background: var(--card); color: var(--text);
+        border: 2px solid var(--border); border-radius: 999px;
+        font-size: 14px; font-weight: 600; cursor: pointer; user-select: none;
+        transition: all 0.15s; min-height: 40px;
     }
-
-    .subject-chip::before {
-        content: '';
-        position: absolute;
-        top: -50%; right: -50%;
-        width: 200%; height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-
-    .subject-chip:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4); }
-    .subject-chip:hover::before { opacity: 1; }
-    .subject-chip:active { transform: translateY(-1px); }
-
-    .subject-chip:nth-child(8n+1) { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25); }
-    .subject-chip:nth-child(8n+2) { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); box-shadow: 0 2px 8px rgba(245, 87, 108, 0.25); }
-    .subject-chip:nth-child(8n+3) { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); box-shadow: 0 2px 8px rgba(79, 172, 254, 0.25); }
-    .subject-chip:nth-child(8n+4) { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); box-shadow: 0 2px 8px rgba(67, 233, 123, 0.25); }
-    .subject-chip:nth-child(8n+5) { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); box-shadow: 0 2px 8px rgba(250, 112, 154, 0.25); }
-    .subject-chip:nth-child(8n+6) { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); box-shadow: 0 2px 8px rgba(48, 207, 208, 0.25); }
-    .subject-chip:nth-child(8n+7) { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; box-shadow: 0 2px 8px rgba(168, 237, 234, 0.4); }
-    .subject-chip:nth-child(8n+8) { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #333; box-shadow: 0 2px 8px rgba(255, 154, 158, 0.3); }
-
-    .subject-chip.active {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.25), 0 0 0 3px rgba(255,255,255,0.5) inset;
-        border: 2px solid rgba(255,255,255,0.7);
-    }
-
-    .subject-chip.active::after {
-        content: '✓';
-        position: absolute;
-        top: 6px; left: 8px;
-        width: 20px; height: 20px;
-        background: white;
-        color: #10b981;
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 13px; font-weight: bold;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    }
-
-    .subject-chip .chip-icon { font-size: 18px; flex-shrink: 0; }
-    .subject-chip .chip-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
+    .subject-chip:hover { border-color: var(--primary); }
+    .subject-chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .subject-chip .chip-icon { font-size: 16px; }
+    .subject-chip .chip-name { white-space: nowrap; }
     .subject-chip .remove {
-        position: absolute;
-        top: 6px; left: 8px;
-        width: 20px; height: 20px;
-        background: rgba(0,0,0,0.25);
-        color: white;
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 12px;
-        opacity: 0;
-        transition: opacity 0.2s, background 0.2s;
-        cursor: pointer;
+        width: 18px; height: 18px; border-radius: 50%; display: none;
+        align-items: center; justify-content: center; font-size: 11px;
+        background: rgba(255,255,255,0.3); cursor: pointer;
     }
-    .subject-chip:hover .remove { opacity: 1; }
-    .subject-chip .remove:hover { background: #ef4444; transform: scale(1.15); }
-    .subject-chip.active .remove { left: 34px; top: 6px; }
-
-    body.dark .subject-chip:nth-child(8n+7),
-    body.dark .subject-chip:nth-child(8n+8) { color: #1f2937; }
-
-    @media (max-width: 600px) {
-        #subjectsList { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
-        .subject-chip { padding: 10px 12px 10px 32px; font-size: 12px; min-height: 44px; }
-    }
+    .subject-chip.active .remove { display: flex; }
+    .subject-chip .remove:hover { background: #ef4444; }
 
     /* ═══════════════════════════════════════════════════
        📊 گزارش‌های ماهانه
@@ -980,6 +924,7 @@
         </div>
     </div>
     <div class="topbar-actions">
+        <select class="year-select" id="topYearSelect" title="سال تحصیلی"></select>
         <button class="btn-icon" id="btnTheme" title="حالت شب">🌙</button>
         <button class="btn-icon" id="btnSettings" title="تنظیمات">⚙️</button>
     </div>
@@ -1200,6 +1145,7 @@
                 <button class="btn btn-outline btn-sm" id="btnGradeToday">📅 امروز</button>
                 <button class="btn btn-outline btn-sm" id="btnGradePrev">◀ روز قبل</button>
                 <button class="btn btn-outline btn-sm" id="btnGradeNext">روز بعد ▶</button>
+                <span class="grade-date-info" id="gradeDateInfo"></span>
             </div>
 
             <div class="card" style="padding:12px;">
@@ -1208,45 +1154,16 @@
                 <button class="btn btn-outline btn-sm" id="btnAddSubject" style="margin-top:8px;">➕ افزودن درس</button>
             </div>
 
-            <div class="dashboard" id="gradeDashboard" style="display:none;">
-                <div class="dash-card">
-                    <div class="dash-icon" style="background:#d1fae5;">🌟</div>
-                    <div class="dash-info">
-                        <div class="dash-value" id="gdLevel1" style="color:#10b981;">0</div>
-                        <div class="dash-label">خیلی خوب</div>
-                    </div>
-                </div>
-                <div class="dash-card">
-                    <div class="dash-icon" style="background:#dbeafe;">😊</div>
-                    <div class="dash-info">
-                        <div class="dash-value" id="gdLevel2" style="color:#3b82f6;">0</div>
-                        <div class="dash-label">خوب</div>
-                    </div>
-                </div>
-                <div class="dash-card">
-                    <div class="dash-icon" style="background:#fef3c7;">😐</div>
-                    <div class="dash-info">
-                        <div class="dash-value" id="gdLevel3" style="color:#f59e0b;">0</div>
-                        <div class="dash-label">قابل قبول</div>
-                    </div>
-                </div>
-                <div class="dash-card">
-                    <div class="dash-icon" style="background:#fee2e2;">😢</div>
-                    <div class="dash-info">
-                        <div class="dash-value" id="gdLevel4" style="color:#ef4444;">0</div>
-                        <div class="dash-label">نیاز به تلاش</div>
-                    </div>
-                </div>
-                <div class="dash-card">
-                    <div class="dash-icon" style="background:#e5e7eb;">📝</div>
-                    <div class="dash-info">
-                        <div class="dash-value" id="gdEntered" style="font-size:18px;">0 / 0</div>
-                        <div class="dash-label">ثبت‌شده</div>
-                    </div>
-                </div>
+            <div class="grade-summary" id="gradeDashboard" style="display:none;">
+                <span class="gs-chip" style="color:#10b981;">🌟 خیلی خوب: <b id="gdLevel1">0</b></span>
+                <span class="gs-chip" style="color:#3b82f6;">😊 خوب: <b id="gdLevel2">0</b></span>
+                <span class="gs-chip" style="color:#f59e0b;">😐 قابل قبول: <b id="gdLevel3">0</b></span>
+                <span class="gs-chip" style="color:#ef4444;">😢 نیاز به تلاش: <b id="gdLevel4">0</b></span>
+                <span class="gs-chip">📝 ثبت‌شده: <b id="gdEntered">0 / 0</b></span>
             </div>
 
             <div class="toolbar" id="gradeToolbar" style="display:none;">
+                <button class="btn btn-success btn-sm" id="btnGradeAllGood" title="فقط برای دانش‌آموزانی که هنوز نمره ندارند">🌟 همه «خیلی خوب» (خالی‌ها)</button>
                 <button class="btn btn-outline btn-sm" id="btnGradePrintDay">🖨️ چاپ نمرات روز</button>
                 <button class="btn btn-primary btn-sm" id="btnGradeMonthlyReport">📊 گزارش ماهانه</button>
                 <button class="btn btn-danger btn-sm" id="btnGradeClearDay">🗑️ پاک کردن این روز</button>
@@ -1409,9 +1326,9 @@
                     <option value="">— انتخاب —</option>
                 </select>
                 <label class="form-label" style="margin:0;">از ماه:</label>
-                <input type="text" class="form-input" id="reportDateFrom" style="max-width:130px;" placeholder="1404/07">
+                <select class="form-select" id="reportDateFrom" style="max-width:150px;"></select>
                 <label class="form-label" style="margin:0;">تا ماه:</label>
-                <input type="text" class="form-input" id="reportDateTo" style="max-width:130px;" placeholder="1404/09">
+                <select class="form-select" id="reportDateTo" style="max-width:150px;"></select>
                 <button class="btn btn-outline btn-sm" id="btnReportReset">🔄 پاک کردن فیلتر</button>
                 <button class="btn btn-primary btn-sm" id="btnReportPrintAll">🖨️ چاپ همه کارنامه‌ها</button>
             </div>
@@ -1440,6 +1357,19 @@
 
             <div class="settings-grid">
 
+                <!-- کارت: سال تحصیلی -->
+                <div class="settings-card">
+                    <div class="settings-card-title">📅 سال تحصیلی</div>
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.7;">
+                        کلاس‌ها، حضور، نمرات، رفتار و تکالیف برای هر سال تحصیلی جداگانه ذخیره می‌شوند و عنوان سال تحصیلی در همهٔ گزارش‌ها چاپ می‌شود.
+                    </p>
+                    <div class="form-group">
+                        <label class="form-label">سال تحصیلی فعال</label>
+                        <select class="form-select" id="setYearSelect"></select>
+                    </div>
+                    <button class="btn btn-success btn-sm" id="btnNewYear">➕ ایجاد سال تحصیلی جدید</button>
+                </div>
+
                 <!-- کارت ۱: اطلاعات معلم -->
                 <div class="settings-card">
                     <div class="settings-card-title">👤 اطلاعات معلم</div>
@@ -1450,10 +1380,6 @@
                     <div class="form-group">
                         <label class="form-label">نام مدرسه</label>
                         <input type="text" class="form-input" id="setSchoolName" placeholder="مثلاً: دبستان شهید بهشتی">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">سال تحصیلی</label>
-                        <input type="text" class="form-input" id="setSchoolYear" placeholder="مثلاً: ۱۴۰۴-۱۴۰۵">
                     </div>
                     <button class="btn btn-primary btn-sm" id="btnSaveSettings">💾 ذخیره</button>
                 </div>
@@ -1703,14 +1629,15 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label class="form-label">از ماه (مثال: 1404/07)</label>
-                <input type="text" class="form-input" id="reportFromMonth" placeholder="1404/07">
+                <label class="form-label">از ماه</label>
+                <select class="form-select" id="reportFromMonth"></select>
             </div>
             <div class="form-group">
                 <label class="form-label">تا ماه</label>
-                <input type="text" class="form-input" id="reportToMonth" placeholder="1404/09">
+                <select class="form-select" id="reportToMonth"></select>
             </div>
         </div>
+        <div id="reportYearNote" style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"></div>
 
         <div class="modal-actions">
             <button class="btn btn-outline" data-close-modal="modalMonthlyReport">انصراف</button>
@@ -1840,10 +1767,178 @@
     }
 
     /* ═══════════════════════════════════════════════════
+       📅 سال تحصیلی، ماه‌ها و تاریخ شمسی
+       ═══════════════════════════════════════════════════ */
+    var YEARS_KEY = 'cm_years_v1';
+    var MONTH_NAMES = {
+        '01': 'فروردین', '02': 'اردیبهشت', '03': 'خرداد', '04': 'تیر', '05': 'مرداد', '06': 'شهریور',
+        '07': 'مهر', '08': 'آبان', '09': 'آذر', '10': 'دی', '11': 'بهمن', '12': 'اسفند'
+    };
+    // ترتیب ماه‌ها در سال تحصیلی (مهر تا شهریور)
+    var SCHOOL_MONTHS = ['07', '08', '09', '10', '11', '12', '01', '02', '03', '04', '05', '06'];
+
+    function pad2(n) { n = String(parseInt(n, 10)); return n.length < 2 ? '0' + n : n; }
+    function monthName(mm) { return MONTH_NAMES[pad2(mm)] || ''; }
+
+    // سال تحصیلی یک تاریخ شمسی: از مهر هر سال تا شهریور سال بعد
+    function academicYearOfDate(dateStr) {
+        var m = String(dateStr || '').match(/^(\d{4})\/(\d{1,2})/);
+        if (!m) return null;
+        var y = parseInt(m[1], 10), mo = parseInt(m[2], 10);
+        var start = mo >= 7 ? y : y - 1;
+        return start + '-' + (start + 1);
+    }
+
+    // داده‌های قدیمیِ قبل از سال تحصیلی، به سالِ آخرین تاریخ ثبت‌شده نسبت داده می‌شوند
+    function guessLegacyYear() {
+        var latest = '';
+        try {
+            var att = JSON.parse(localStorage.getItem('cm_attendance_v1') || '{}');
+            Object.keys(att).forEach(function(k) { var d = k.split('|')[1]; if (d && d > latest) latest = d; });
+            var gr = JSON.parse(localStorage.getItem('cm_grades_v3') || '{}');
+            Object.keys(gr).forEach(function(k) { var p = k.split('|'); var d = p[p.length - 1]; if (d && d > latest) latest = d; });
+        } catch(e) {}
+        return academicYearOfDate(latest) || academicYearOfDate(getTodayJalaliStr()) || '1405-1406';
+    }
+
+    var yearsState = (function() {
+        var st = null;
+        try { st = JSON.parse(localStorage.getItem(YEARS_KEY)); } catch(e) {}
+        if (!st || !Array.isArray(st.list) || st.list.length === 0 || !st.legacy) {
+            var y0 = guessLegacyYear();
+            st = { list: [y0], current: y0, legacy: y0 };
+            try { localStorage.setItem(YEARS_KEY, JSON.stringify(st)); } catch(e) {}
+        }
+        if (st.list.indexOf(st.current) < 0) st.current = st.list[0];
+        return st;
+    })();
+
+    function saveYears() {
+        try { localStorage.setItem(YEARS_KEY, JSON.stringify(yearsState)); } catch(e) {}
+    }
+
+    // کلید ذخیره‌سازی هر سال (سال اولِ برنامه همان کلیدهای قدیمی را نگه می‌دارد)
+    function yk(base, year) {
+        year = year || yearsState.current;
+        return (year === yearsState.legacy) ? base : base + '@' + year;
+    }
+
+    function yearLabel(y) {
+        return String(y || yearsState.current).split('-').map(function(p) { return toPersianNum(parseInt(p, 10)); }).join('-');
+    }
+
+    // «۱۴۰۵/۰۷» برای ماهِ mm در سال تحصیلی
+    function monthKeyFor(mm, year) {
+        var start = parseInt(String(year || yearsState.current).split('-')[0], 10);
+        var m = parseInt(mm, 10);
+        return (m >= 7 ? start : start + 1) + '/' + pad2(m);
+    }
+
+    function monthRangeKeys(fromMM, toMM) {
+        var fi = fromMM ? SCHOOL_MONTHS.indexOf(pad2(fromMM)) : -1;
+        var ti = toMM ? SCHOOL_MONTHS.indexOf(pad2(toMM)) : -1;
+        if (fi >= 0 && ti >= 0 && fi > ti) { var t = fi; fi = ti; ti = t; }
+        return {
+            from: fi >= 0 ? monthKeyFor(SCHOOL_MONTHS[fi]) : '',
+            to: ti >= 0 ? monthKeyFor(SCHOOL_MONTHS[ti]) : ''
+        };
+    }
+
+    // «مهر ماه» یا «مهر تا آذر ماه» یا «کل سال تحصیلی»
+    function monthRangeText(fromKey, toKey) {
+        var fm = fromKey ? fromKey.substring(5, 7) : '';
+        var tm = toKey ? toKey.substring(5, 7) : '';
+        if (!fm && !tm) return 'کل سال تحصیلی';
+        if (fm && tm) return fm === tm ? monthName(fm) + ' ماه' : monthName(fm) + ' تا ' + monthName(tm) + ' ماه';
+        if (fm) return 'از ' + monthName(fm) + ' ماه';
+        return 'تا ' + monthName(tm) + ' ماه';
+    }
+
+    // «۱۵ مهر»
+    function fmtDayMonth(dateStr) {
+        var p = String(dateStr || '').split('/');
+        if (p.length < 3) return dateStr || '';
+        return toPersianNum(parseInt(p[2], 10)) + ' ' + monthName(p[1]);
+    }
+
+    function yearLine() {
+        return '<div style="text-align:center;font-size:10.5pt;margin:-2px 0 6px 0;">سال تحصیلی ' + yearLabel(yearsState.current) + '</div>';
+    }
+
+    function fillMonthOptions(sel, blankLabel) {
+        if (!sel) return;
+        var h = blankLabel ? '<option value="">' + blankLabel + '</option>' : '';
+        SCHOOL_MONTHS.forEach(function(mm) { h += '<option value="' + mm + '">' + monthName(mm) + '</option>'; });
+        sel.innerHTML = h;
+    }
+
+    // ماه پیش‌فرض: ماه جاری اگر در سال تحصیلی فعال باشد، وگرنه مهر
+    function defaultMonthCode() {
+        var today = getTodayJalaliStr();
+        if (academicYearOfDate(today) === yearsState.current) return pad2(today.split('/')[1]);
+        return '07';
+    }
+
+    function jalaliToGregorian(jy, jm, jd) {
+        jy = jy - 979;
+        var jDayNo = 365 * jy + Math.floor(jy / 33) * 8 + Math.floor(((jy % 33) + 3) / 4);
+        var jDaysInMonth = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
+        for (var i = 0; i < jm - 1; ++i) jDayNo += jDaysInMonth[i];
+        jDayNo += jd - 1;
+        var gDayNo = jDayNo + 79;
+        var gy = 1600 + 400 * Math.floor(gDayNo / 146097);
+        gDayNo = gDayNo % 146097;
+        var leap = true;
+        if (gDayNo >= 36525) {
+            gDayNo--;
+            gy += 100 * Math.floor(gDayNo / 36524);
+            gDayNo = gDayNo % 36524;
+            if (gDayNo >= 365) gDayNo++; else leap = false;
+        }
+        gy += 4 * Math.floor(gDayNo / 1461);
+        gDayNo %= 1461;
+        if (gDayNo >= 366) {
+            leap = false;
+            gDayNo--;
+            gy += Math.floor(gDayNo / 365);
+            gDayNo = gDayNo % 365;
+        }
+        var gDaysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        var gi = 0;
+        for (; gDayNo >= gDaysInMonth[gi] + ((gi === 1 && leap) ? 1 : 0); gi++) {
+            gDayNo -= gDaysInMonth[gi] + ((gi === 1 && leap) ? 1 : 0);
+        }
+        return [gy, gi + 1, gDayNo + 1];
+    }
+
+    function jalaliStrToDate(str) {
+        var m = String(str || '').match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+        if (!m) return null;
+        var g = jalaliToGregorian(parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10));
+        return new Date(g[0], g[1] - 1, g[2], 12, 0, 0);
+    }
+
+    function dateToJalaliStr(d) {
+        return new Intl.DateTimeFormat('fa-IR-u-nu-latn', {
+            year: 'numeric', month: '2-digit', day: '2-digit'
+        }).format(d);
+    }
+
+    // «یکشنبه ۱۵ مهر ۱۴۰۵»
+    function describeJalaliDate(str) {
+        var d = jalaliStrToDate(str);
+        var p = String(str || '').split('/');
+        if (!d || p.length < 3) return str || '';
+        var wd = '';
+        try { wd = new Intl.DateTimeFormat('fa-IR', { weekday: 'long' }).format(d); } catch(e) {}
+        return (wd ? wd + ' ' : '') + toPersianNum(parseInt(p[2], 10)) + ' ' + monthName(p[1]) + ' ' + toPersianNum(parseInt(p[0], 10));
+    }
+
+    /* ═══════════════════════════════════════════════════
        💾 ذخیره‌سازی
        ═══════════════════════════════════════════════════ */
 
-    var STORAGE_KEY = 'cm_data_v1';
+    var STORAGE_KEY = yk('cm_data_v1');
     var appData = { classes: [] };
 
     function loadData() {
@@ -2544,13 +2639,56 @@
         };
     }
 
+    // هر گزارش (یا هر کارنامه) را طوری کوچک می‌کند که دقیقاً در یک صفحهٔ A4 جا شود
+    function fitDocPages(doc, html) {
+        var land = /size:\s*A4\s+landscape/i.test(html);
+        var mt = 0.8, mr = 1, mb = 0.3, ml = 1;
+        var mm = html.match(/@page\s*\{[^}]*?margin:\s*([\d.]+)cm\s+([\d.]+)cm\s+([\d.]+)cm\s+([\d.]+)cm/i);
+        if (mm) { mt = parseFloat(mm[1]); mr = parseFloat(mm[2]); mb = parseFloat(mm[3]); ml = parseFloat(mm[4]); }
+        var pxcm = 96 / 2.54;
+        var W = Math.floor(((land ? 29.7 : 21) - ml - mr) * pxcm);
+        var H = Math.floor(((land ? 21 : 29.7) - mt - mb) * pxcm) - 12;
+        var body = doc.body;
+        var pages = [].slice.call(body.querySelectorAll('.page'));
+        if (!pages.length) {
+            var wrap = doc.createElement('div');
+            wrap.className = 'page';
+            while (body.firstChild) wrap.appendChild(body.firstChild);
+            body.appendChild(wrap);
+            pages = [wrap];
+        }
+        pages.forEach(function(pg, idx) {
+            var outer = doc.createElement('div');
+            outer.style.cssText = 'position:relative;overflow:hidden;width:' + W + 'px;height:' + H + 'px;' +
+                (idx < pages.length - 1 ? 'page-break-after:always;break-after:page;' : '');
+            pg.parentNode.insertBefore(outer, pg);
+            outer.appendChild(pg);
+            pg.style.cssText = 'position:absolute;top:0;right:0;transform-origin:top right;page-break-after:auto;break-after:auto;';
+            var s = 1;
+            for (var i = 0; i < 14; i++) {
+                var w = W / s;
+                pg.style.width = w + 'px';
+                var h = pg.offsetHeight;
+                var sw = pg.scrollWidth;
+                [].forEach.call(pg.querySelectorAll('table'), function(t) { if (t.offsetWidth > sw) sw = t.offsetWidth; });
+                var ns = s;
+                if (sw > w + 1) ns = Math.min(ns, s * w / sw);
+                if (h * s > H) ns = Math.min(ns, H / h);
+                if (ns >= s - 0.002) break;
+                s = ns * 0.998;
+            }
+            pg.style.transform = s < 1 ? 'scale(' + s + ')' : 'none';
+        });
+    }
+
     function openPrintWindow(html) {
         var iframe = document.createElement('iframe');
-        iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
+        iframe.style.cssText = 'position:fixed;left:-10000px;top:0;width:3000px;height:3000px;border:0;visibility:hidden;';
         document.body.appendChild(iframe);
         var doc = iframe.contentWindow.document;
         doc.open(); doc.write(html); doc.close();
         setTimeout(function() {
+            try { fitDocPages(doc, html); } catch(e) { console.error(e); }
             try { iframe.contentWindow.focus(); iframe.contentWindow.print(); }
             catch(e) { alert('❌ خطا در چاپ: ' + e.message); }
             setTimeout(function() { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 3000);
@@ -2569,7 +2707,7 @@
     var attCurrentClass = -1;
     var attCurrentDate = '';
     var attendanceData = {};
-    var ATT_STORAGE_KEY = 'cm_attendance_v1';
+    var ATT_STORAGE_KEY = yk('cm_attendance_v1');
 
     function loadAttendance() {
         try {
@@ -2880,9 +3018,9 @@
        📝 نمرات توصیفی (تاریخ‌محور)
        ═══════════════════════════════════════════════════ */
     var gradesData = {};
-    var GRADES_STORAGE_KEY = 'cm_grades_v3';
+    var GRADES_STORAGE_KEY = yk('cm_grades_v3');
     var subjectsList = ['فارسی', 'ریاضی', 'علوم', 'مطالعات اجتماعی', 'قرآن', 'نگارش', 'هدیه‌های آسمان', 'هنر', 'ورزش'];
-    var SUBJECTS_STORAGE_KEY = 'cm_subjects_v1';
+    var SUBJECTS_STORAGE_KEY = yk('cm_subjects_v1');
     var currentSubject = '';
     var currentGradeDate = '';
 
@@ -3019,6 +3157,8 @@
         var container = document.getElementById('gradesContainer');
         var dash = document.getElementById('gradeDashboard');
         var toolbar = document.getElementById('gradeToolbar');
+        var di = document.getElementById('gradeDateInfo');
+        if (di) di.textContent = currentGradeDate ? describeJalaliDate(currentGradeDate) : '';
         if (!container) return;
 
         var cs = document.getElementById('gradeClassSelect');
@@ -3045,19 +3185,13 @@
             return;
         }
 
-        if (dash) dash.style.display = 'grid';
+        if (dash) dash.style.display = 'flex';
         if (toolbar) toolbar.style.display = 'flex';
 
         var key = getGradeKey(cls.className, currentSubject, date);
         var dayData = gradesData[key] || {};
 
-        var html = '<div class="desc-legend">';
-        html += '<span style="font-weight:600;">راهنما:</span>';
-        html += '<div class="desc-legend-item"><div class="desc-legend-num" style="background:#10b981;">1</div><span>خیلی خوب</span></div>';
-        html += '<div class="desc-legend-item"><div class="desc-legend-num" style="background:#3b82f6;">2</div><span>خوب</span></div>';
-        html += '<div class="desc-legend-item"><div class="desc-legend-num" style="background:#f59e0b;">3</div><span>قابل قبول</span></div>';
-        html += '<div class="desc-legend-item"><div class="desc-legend-num" style="background:#ef4444;">4</div><span>نیاز به تلاش</span></div>';
-        html += '</div>';
+        var html = '<div class="grade-context">📚 ' + escapeHtml(currentSubject) + ' &nbsp;•&nbsp; 📅 ' + escapeHtml(describeJalaliDate(date)) + '</div>';
 
         html += '<div class="card" style="padding:0;">';
         students.forEach(function(s, i) {
@@ -3068,12 +3202,11 @@
             html += '<div class="att-num">' + toPersianNum(i + 1) + '</div>';
             html += '<div class="att-name">';
             html += '<div>' + escapeHtml((s.family || '') + ' ' + (s.name || '')) + '</div>';
-            if (s.codemelli) html += '<div class="att-code">' + escapeHtml(s.codemelli) + '</div>';
             html += '</div>';
             html += '<div class="desc-actions">';
             for (var lvl = 1; lvl <= 4; lvl++) {
                 var selected = (hasLevel && parseInt(level) === lvl) ? ' selected' : '';
-                html += '<button class="desc-btn' + selected + '" data-level="' + lvl + '" title="' + DESC_LEVELS[lvl].label + '">' + lvl + '</button>';
+                html += '<button class="desc-btn' + selected + '" data-level="' + lvl + '">' + DESC_LEVELS[lvl].label + '</button>';
             }
             html += '</div></div>';
         });
@@ -3085,7 +3218,7 @@
                 var row = btn.closest('.desc-row');
                 var sid = row.getAttribute('data-sid');
                 var level = parseInt(btn.getAttribute('data-level'));
-                var current = dayData[sid];
+                var current = (gradesData[key] || {})[sid];
                 var currentNum = current !== undefined ? parseInt(current) : -1;
                 var newLevel = (currentNum === level) ? null : level;
 
@@ -3169,13 +3302,10 @@
     document.getElementById('btnGradeNext').addEventListener('click', function() { shiftGradeDate(1); });
 
     function shiftGradeDate(days) {
-        if (!currentGradeDate) return;
         try {
-            var d = new Date();
-            d.setDate(d.getDate() + days);
-            var jal = new Intl.DateTimeFormat('fa-IR-u-nu-latn', {
-                year: 'numeric', month: '2-digit', day: '2-digit'
-            }).format(d).replace(/\//g, '/');
+            var base = jalaliStrToDate(currentGradeDate) || new Date();
+            base.setDate(base.getDate() + days);
+            var jal = dateToJalaliStr(base);
             if (gradeDateInput) gradeDateInput.value = jal;
             currentGradeDate = jal;
             renderGrades();
@@ -3199,6 +3329,22 @@
             closeModal('modalSubject');
         });
     }
+
+    /* ====== همه «خیلی خوب» (فقط خالی‌ها) ====== */
+    document.getElementById('btnGradeAllGood').addEventListener('click', function() {
+        var cs = document.getElementById('gradeClassSelect');
+        var classIdx = cs.value === '' ? -1 : parseInt(cs.value);
+        if (classIdx < 0 || !currentSubject || !currentGradeDate) return;
+        var cls = appData.classes[classIdx];
+        var key = getGradeKey(cls.className, currentSubject, currentGradeDate);
+        if (!gradesData[key]) gradesData[key] = {};
+        (cls.students || []).forEach(function(s) {
+            var v = gradesData[key][s.id];
+            if (v === undefined || v === null || v === '') gradesData[key][s.id] = 1;
+        });
+        saveGrades();
+        renderGrades();
+    });
 
     /* ====== چاپ نمرات روز ====== */
     document.getElementById('btnGradePrintDay').addEventListener('click', function() {
@@ -3247,6 +3393,7 @@
         html += 'td.lv4 { color: #ef4444; font-weight: bold; }';
         html += '</style></head><body>';
         html += '<div class="h">نمرات توصیفی کلاس ' + escapeHtml(cls.className) + '</div>';
+        html += yearLine();
         html += '<div class="sub">درس: ' + escapeHtml(subject) + ' &nbsp; | &nbsp; تاریخ: ' + escapeHtml(date) + ' &nbsp; | &nbsp; تعداد: ' + students.length + '</div>';
         html += '<table><colgroup><col style="width:8%;"><col style="width:20%;"><col style="width:52%;"><col style="width:20%;"></colgroup>';
         html += '<thead><tr><th>ردیف</th><th>کد ملی</th><th>نام و نام خانوادگی</th><th>ارزیابی</th></tr></thead><tbody>';
@@ -3291,10 +3438,15 @@
             stSel.appendChild(opt);
         });
 
-        var today = getTodayJalaliStr();
-        var currentMonth = today.substring(0, 7);
-        document.getElementById('reportFromMonth').value = currentMonth;
-        document.getElementById('reportToMonth').value = currentMonth;
+        var fromSel = document.getElementById('reportFromMonth');
+        var toSel = document.getElementById('reportToMonth');
+        fillMonthOptions(fromSel);
+        fillMonthOptions(toSel);
+        var defMM = defaultMonthCode();
+        fromSel.value = defMM;
+        toSel.value = defMM;
+        var yn = document.getElementById('reportYearNote');
+        if (yn) yn.textContent = 'سال تحصیلی ' + yearLabel(yearsState.current) + ' — برای یک ماه، «از» و «تا» را یکی بگذارید.';
 
         document.getElementById('modalMonthlyReport').classList.add('open');
     }
@@ -3318,11 +3470,9 @@
         if (classIdx < 0) { alert('❌ کلاس انتخاب نشده.'); return; }
 
         var cls = appData.classes[classIdx];
-        var fromMonth = normalizeDate(document.getElementById('reportFromMonth').value.trim());
-        var toMonth = normalizeDate(document.getElementById('reportToMonth').value.trim());
-
-        if (!fromMonth || fromMonth.length !== 7) { alert('❌ «از ماه» صحیح نیست. مثال: 1404/07'); return; }
-        if (!toMonth || toMonth.length !== 7) { alert('❌ «تا ماه» صحیح نیست. مثال: 1404/09'); return; }
+        var rk = monthRangeKeys(document.getElementById('reportFromMonth').value, document.getElementById('reportToMonth').value);
+        var fromMonth = rk.from;
+        var toMonth = rk.to;
 
         if (reportMode === 'class') {
             var subject = document.getElementById('reportSubjectSelect').value;
@@ -3388,14 +3538,15 @@
         html += 'td.empty { color: #999; }';
         html += '</style></head><body>';
         html += '<div class="h">گزارش ماهانهٔ نمرات توصیفی - کلاس ' + escapeHtml(cls.className) + '</div>';
-        html += '<div class="sub">درس: ' + escapeHtml(subject) + ' &nbsp; | &nbsp; از: ' + fromMonth + ' &nbsp; تا: ' + toMonth + ' &nbsp; | &nbsp; تعداد جلسات: ' + dates.length + '</div>';
+        html += yearLine();
+        html += '<div class="sub">درس: ' + escapeHtml(subject) + ' &nbsp; | &nbsp; گزارش ' + monthRangeText(fromMonth, toMonth) + ' &nbsp; | &nbsp; تعداد جلسات: ' + dates.length + '</div>';
         html += '<table><thead><tr>';
         html += '<th style="width:30px;">#</th>';
         html += '<th style="width:90px;">کد ملی</th>';
         html += '<th style="width:150px;">نام و نام خانوادگی</th>';
         dates.forEach(function(d) {
             var parts = d.split('/');
-            html += '<th style="min-width:62px;">' + parts[1] + '/' + parts[2] + '</th>';
+            html += '<th style="min-width:62px;">' + fmtDayMonth(d) + '</th>';
         });
         html += '</tr></thead><tbody>';
 
@@ -3480,15 +3631,16 @@
         html += 'td.empty { color: #999; }';
         html += '</style></head><body>';
         html += '<div class="h">کارنامهٔ توصیفی دانش‌آموز</div>';
+        html += yearLine();
         html += '<div class="info">' + escapeHtml((student.family || '') + ' ' + (student.name || '')) +
                 ' &nbsp; | &nbsp; کلاس: ' + escapeHtml(cls.className) +
                 ' &nbsp; | &nbsp; کد ملی: ' + escapeHtml(student.codemelli || '—') + '</div>';
-        html += '<div class="sub">از: ' + fromMonth + ' &nbsp; تا: ' + toMonth + '</div>';
+        html += '<div class="sub">گزارش ' + monthRangeText(fromMonth, toMonth) + '</div>';
         html += '<table><thead><tr>';
         html += '<th style="width:120px;">درس</th>';
         dates.forEach(function(d) {
             var parts = d.split('/');
-            html += '<th style="min-width:62px;">' + parts[1] + '/' + parts[2] + '</th>';
+            html += '<th style="min-width:62px;">' + fmtDayMonth(d) + '</th>';
         });
         html += '</tr></thead><tbody>';
 
@@ -3517,6 +3669,9 @@
     /* ====== Hook صفحه ====== */
     function gradePageHook() {
         refreshGradeClassDropdown();
+        var gcs = document.getElementById('gradeClassSelect');
+        if (gcs && gcs.value === '' && appData.classes.length === 1) gcs.value = '0';
+        if (!currentSubject && subjectsList.length > 0) currentSubject = subjectsList[0];
         renderSubjectsList();
         if (!currentGradeDate) {
             currentGradeDate = getTodayJalaliStr();
@@ -3533,7 +3688,7 @@
        🎯 رفتار
        ═══════════════════════════════════════════════════ */
     var behaviorsData = {}; // { className: [{id, studentId, date, type, points, reason}] }
-    var BEHAVIORS_STORAGE_KEY = 'cm_behaviors_v1';
+    var BEHAVIORS_STORAGE_KEY = yk('cm_behaviors_v1');
     var currentBehaviorClass = -1;
     var behaviorFilterFrom = '';
     var behaviorFilterTo = '';
@@ -3869,6 +4024,7 @@
         html += 'td.neg { color: #ef4444; font-weight: bold; }';
         html += '</style></head><body>';
         html += '<div class="h">گزارش رفتار کلاس ' + escapeHtml(cls.className) + '</div>';
+        html += yearLine();
         html += '<div class="sub">';
         if (behaviorFilterFrom) html += 'از: ' + behaviorFilterFrom + ' &nbsp; ';
         if (behaviorFilterTo) html += 'تا: ' + behaviorFilterTo + ' &nbsp; ';
@@ -3966,7 +4122,7 @@
        📖 تکالیف
        ═══════════════════════════════════════════════════ */
     var homeworkData = {}; // { className: [{id, title, subject, dueDate, description, status: {studentId: status}}] }
-    var HOMEWORK_STORAGE_KEY = 'cm_homework_v1';
+    var HOMEWORK_STORAGE_KEY = yk('cm_homework_v1');
     var currentHwClass = -1;
     var currentHwId = null;
     var hwFilterSubject = '';
@@ -4413,6 +4569,7 @@
         html += 'td.partial { color: #f59e0b; font-weight: bold; }';
         html += '</style></head><body>';
         html += '<div class="h">گزارش تکلیف - ' + escapeHtml(cls.className) + '</div>';
+        html += yearLine();
         html += '<div class="info">';
         html += '<b>' + escapeHtml(hw.title) + '</b>';
         if (hw.subject) html += ' &nbsp; | &nbsp; درس: ' + escapeHtml(hw.subject);
@@ -4482,6 +4639,72 @@
         return true;
     }
 
+    // ===== جدول نمرات توصیفی: درس‌ها در سطر، تاریخ‌ها در ستون =====
+    function orderedSubjectsOf(stats) {
+        var ordered = subjectsList.filter(function(sb) { return stats.grades[sb]; });
+        Object.keys(stats.grades).forEach(function(k) { if (ordered.indexOf(k) < 0) ordered.push(k); });
+        return ordered;
+    }
+
+    function cardGradesTable(stats, screen) {
+        var subs = orderedSubjectsOf(stats);
+        if (subs.length === 0) {
+            return screen
+                ? '<div class="report-empty">نمره‌ای در این بازه ثبت نشده</div>'
+                : '<div style="text-align:center;padding:10px;color:#999;">نمره‌ای ثبت نشده</div>';
+        }
+        var dm = {};
+        subs.forEach(function(sb) { Object.keys(stats.grades[sb].byDate || {}).forEach(function(d) { dm[d] = true; }); });
+        var dates = Object.keys(dm).sort();
+        var fs = dates.length > 20 ? 8 : (dates.length > 12 ? 9 : (dates.length > 8 ? 10 : 11));
+
+        var h = screen ? '<div style="overflow-x:auto;"><table class="report-mini-table">' : '<table class="mx" style="font-size:' + fs + 'pt;">';
+        h += '<thead><tr><th style="min-width:90px;">درس</th>';
+        dates.forEach(function(d) { h += '<th style="white-space:nowrap;">' + fmtDayMonth(d) + '</th>'; });
+        h += '</tr></thead><tbody>';
+        subs.forEach(function(sb) {
+            var bd = stats.grades[sb].byDate || {};
+            h += '<tr>';
+            h += screen ? '<td>' + getSubjectIcon(sb) + ' ' + escapeHtml(sb) + '</td>' : '<td class="name">' + escapeHtml(sb) + '</td>';
+            dates.forEach(function(d) {
+                var l = bd[d];
+                if (l !== undefined && DESC_LEVELS[l]) {
+                    if (screen) h += '<td style="color:' + DESC_LEVELS[l].color + ';font-weight:bold;white-space:nowrap;">' + DESC_LEVELS[l].label + '</td>';
+                    else h += '<td class="lv' + l + '">' + DESC_LEVELS[l].label + '</td>';
+                } else {
+                    h += '<td style="color:#999;">—</td>';
+                }
+            });
+            h += '</tr>';
+        });
+        h += '</tbody></table>';
+        if (screen) h += '</div>';
+        return h;
+    }
+
+    // ===== جدول رفتار: تاریخ، نوع رفتار (مثبت/منفی) و توضیح =====
+    function cardBehaviorTable(stats, screen) {
+        var items = stats.behavior.items || [];
+        if (items.length === 0) {
+            return screen
+                ? '<div class="report-empty">رفتاری در این بازه ثبت نشده</div>'
+                : '<div style="text-align:center;padding:10px;color:#999;">رفتاری ثبت نشده</div>';
+        }
+        var h = screen ? '<table class="report-mini-table">' : '<table class="mx">';
+        h += '<thead><tr><th>تاریخ</th><th>نوع رفتار</th><th>توضیح</th></tr></thead><tbody>';
+        items.forEach(function(it) {
+            var pos = it.type === 'positive';
+            var col = pos ? '#10b981' : '#ef4444';
+            h += '<tr>';
+            h += '<td style="white-space:nowrap;">' + fmtDayMonth(it.date) + '</td>';
+            h += '<td style="color:' + col + ';font-weight:bold;white-space:nowrap;">' + (pos ? 'مثبت' : 'منفی') + '</td>';
+            h += '<td style="text-align:right;">' + escapeHtml(it.reason || '') + '</td>';
+            h += '</tr>';
+        });
+        h += '</tbody></table>';
+        return h;
+    }
+
     // ===== محاسبهٔ آمار کامل یک دانش‌آموز =====
     function calcStudentStats(cls, student) {
         var stats = {
@@ -4492,7 +4715,7 @@
             // حضور
             attendance: { present: 0, absent: 0, late: 0, excused: 0 },
             // رفتار
-            behavior: { positive: 0, negative: 0, count: 0 },
+            behavior: { positive: 0, negative: 0, count: 0, items: [] },
             // تکالیف
             homework: { done: 0, notdone: 0, partial: 0, total: 0 }
         };
@@ -4511,8 +4734,9 @@
             var data = gradesData[key];
             if (data[student.id] === undefined) return;
 
-            if (!stats.grades[subj]) stats.grades[subj] = { levels: [], avgLevel: 0 };
+            if (!stats.grades[subj]) stats.grades[subj] = { levels: [], avgLevel: 0, byDate: {} };
             stats.grades[subj].levels.push(parseInt(data[student.id]));
+            stats.grades[subj].byDate[date] = parseInt(data[student.id]);
             stats.gradesCount++;
         });
 
@@ -4547,7 +4771,9 @@
             if (b.type === 'positive') stats.behavior.positive++;
             else stats.behavior.negative++;
             stats.behavior.count++;
+            stats.behavior.items.push({ date: b.date, type: b.type, reason: b.reason || '' });
         });
+        stats.behavior.items.sort(function(a, b) { return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); });
 
         // ===== تکالیف =====
         var hwList = homeworkData[cls.className] || [];
@@ -4678,26 +4904,7 @@
         // بخش نمرات
         html += '<div class="report-section">';
         html += '<div class="report-section-title">📝 نمرات توصیفی</div>';
-        if (Object.keys(stats.grades).length === 0) {
-            html += '<div class="report-empty">نمره‌ای در این بازه ثبت نشده</div>';
-        } else {
-            html += '<table class="report-mini-table"><thead><tr>';
-            html += '<th>درس</th><th>تعداد ثبت</th><th>ارزیابی کلی</th>';
-            html += '</tr></thead><tbody>';
-            Object.keys(stats.grades).forEach(function(subj) {
-                var g = stats.grades[subj];
-                var lvl = Math.round(g.avgLevel);
-                if (lvl < 1) lvl = 1;
-                if (lvl > 4) lvl = 4;
-                var lvlColor = DESC_LEVELS[lvl].color;
-                html += '<tr>';
-                html += '<td>' + getSubjectIcon(subj) + ' ' + escapeHtml(subj) + '</td>';
-                html += '<td>' + toPersianNum(g.levels.length) + '</td>';
-                html += '<td style="color:' + lvlColor + ';font-weight:bold;">' + DESC_LEVELS[lvl].label + '</td>';
-                html += '</tr>';
-            });
-            html += '</tbody></table>';
-        }
+        html += cardGradesTable(stats, true);
         html += '</div>';
 
         // بخش حضور
@@ -4719,15 +4926,7 @@
         // بخش رفتار
         html += '<div class="report-section">';
         html += '<div class="report-section-title">🎯 رفتار</div>';
-        if (stats.behavior.count === 0) {
-            html += '<div class="report-empty">رفتاری در این بازه ثبت نشده</div>';
-        } else {
-            html += '<div class="compare-grid">';
-            html += '<div class="compare-card"><div class="compare-card-title">🌟 رفتار مثبت</div><div class="compare-card-value" style="color:#10b981;">' + toPersianNum(stats.behavior.positive) + '</div></div>';
-            html += '<div class="compare-card"><div class="compare-card-title">⚠️ رفتار منفی</div><div class="compare-card-value" style="color:#ef4444;">' + toPersianNum(stats.behavior.negative) + '</div></div>';
-            html += '<div class="compare-card"><div class="compare-card-title">📋 کل ثبت‌ها</div><div class="compare-card-value">' + toPersianNum(stats.behavior.count) + '</div></div>';
-            html += '</div>';
-        }
+        html += cardBehaviorTable(stats, true);
         html += '</div>';
 
         // بخش تکالیف
@@ -5009,62 +5208,43 @@
     }
 
     // ===== چاپ کارنامهٔ دانش‌آموز =====
-    function printStudentReport(cls, student, stats) {
-        var html = '<html><head><meta charset="UTF-8">';
-        html += '<title>کارنامه ' + escapeHtml((student.family || '') + ' ' + (student.name || '')) + '</title>';
-        html += '<style>';
-        html += '@page { size: A4 portrait; margin: 0.8cm 1cm 0.3cm 1cm; }';
-        html += 'body { font-family: "Vazirmatn", "B Nazanin", "Tahoma", sans-serif; direction: rtl; margin: 0; color: #000; }';
-        html += '.h { text-align: center; font-weight: bold; font-size: 18pt; padding: 6px 0 10px 0; border-bottom: 2px solid #000; margin-bottom: 12px; }';
-        html += '.info-block { background: #f5f5f5; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 12pt; }';
-        html += '.info-block div { margin-bottom: 4px; }';
-        html += '.section { margin-bottom: 12px; }';
-        html += '.section-title { background: #e8e8e8; padding: 6px 10px; border-radius: 5px; font-weight: bold; font-size: 13pt; margin-bottom: 6px; border-right: 4px solid #2563eb; }';
-        html += 'table { border-collapse: collapse; width: 100%; font-size: 11pt; }';
-        html += 'th, td { border: 1px solid #000; padding: 5px 8px; text-align: center; }';
-        html += 'th { background: #e8e8e8; font-weight: bold; }';
-        html += 'td.name { text-align: right; font-weight: 600; }';
-        html += 'td.lv1 { color: #10b981; font-weight: bold; }';
-        html += 'td.lv2 { color: #3b82f6; font-weight: bold; }';
-        html += 'td.lv3 { color: #f59e0b; font-weight: bold; }';
-        html += 'td.lv4 { color: #ef4444; font-weight: bold; }';
-        html += '</style></head><body>';
+    function cardCss() {
+        var c = '';
+        c += '@page { size: A4 portrait; margin: 0.8cm 1cm 0.3cm 1cm; }';
+        c += 'body { font-family: "Vazirmatn", "B Nazanin", "Tahoma", sans-serif; direction: rtl; margin: 0; color: #000; }';
+        c += '.h { text-align: center; font-weight: bold; font-size: 18pt; padding: 6px 0 10px 0; border-bottom: 2px solid #000; margin-bottom: 12px; }';
+        c += '.info-block { background: #f5f5f5; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 12pt; }';
+        c += '.info-block div { margin-bottom: 4px; }';
+        c += '.section { margin-bottom: 12px; }';
+        c += '.section-title { background: #e8e8e8; padding: 6px 10px; border-radius: 5px; font-weight: bold; font-size: 13pt; margin-bottom: 6px; border-right: 4px solid #2563eb; }';
+        c += 'table { border-collapse: collapse; width: 100%; font-size: 11pt; }';
+        c += 'th, td { border: 1px solid #000; padding: 5px 8px; text-align: center; }';
+        c += 'table.mx th, table.mx td { padding: 3px 4px; }';
+        c += 'th { background: #e8e8e8; font-weight: bold; }';
+        c += 'td.name { text-align: right; font-weight: 600; }';
+        c += 'td.lv1 { color: #10b981; font-weight: bold; }';
+        c += 'td.lv2 { color: #3b82f6; font-weight: bold; }';
+        c += 'td.lv3 { color: #f59e0b; font-weight: bold; }';
+        c += 'td.lv4 { color: #ef4444; font-weight: bold; }';
+        return c;
+    }
 
-        html += '<div class="h">کارنامهٔ دانش‌آموز</div>';
+    function buildCardBody(cls, student, stats) {
+        var html = '<div class="h">کارنامهٔ دانش‌آموز</div>';
+        html += yearLine();
 
         html += '<div class="info-block">';
         html += '<div><b>نام و نام خانوادگی:</b> ' + escapeHtml((student.family || '') + ' ' + (student.name || '')) + '</div>';
         if (student.father) html += '<div><b>نام پدر:</b> ' + escapeHtml(student.father) + '</div>';
         if (student.codemelli) html += '<div><b>کد ملی:</b> ' + escapeHtml(student.codemelli) + '</div>';
         html += '<div><b>کلاس:</b> ' + escapeHtml(cls.className) + '</div>';
-        if (reportFilterFrom || reportFilterTo) {
-            html += '<div><b>بازه:</b> ';
-            if (reportFilterFrom) html += 'از ' + reportFilterFrom + ' ';
-            if (reportFilterTo) html += 'تا ' + reportFilterTo;
-            html += '</div>';
-        }
+        html += '<div><b>بازهٔ گزارش:</b> ' + monthRangeText(reportFilterFrom, reportFilterTo) + '</div>';
         html += '</div>';
 
         // نمرات
         html += '<div class="section">';
         html += '<div class="section-title">📝 نمرات توصیفی</div>';
-        if (Object.keys(stats.grades).length === 0) {
-            html += '<div style="text-align:center;padding:10px;color:#999;">نمره‌ای ثبت نشده</div>';
-        } else {
-            html += '<table><thead><tr><th>درس</th><th>تعداد ثبت</th><th>ارزیابی کلی</th></tr></thead><tbody>';
-            Object.keys(stats.grades).forEach(function(subj) {
-                var g = stats.grades[subj];
-                var lvl = Math.round(g.avgLevel);
-                if (lvl < 1) lvl = 1;
-                if (lvl > 4) lvl = 4;
-                html += '<tr>';
-                html += '<td class="name">' + escapeHtml(subj) + '</td>';
-                html += '<td>' + g.levels.length + '</td>';
-                html += '<td class="lv' + lvl + '">' + DESC_LEVELS[lvl].label + '</td>';
-                html += '</tr>';
-            });
-            html += '</tbody></table>';
-        }
+        html += cardGradesTable(stats, false);
         html += '</div>';
 
         // حضور
@@ -5082,12 +5262,7 @@
         // رفتار
         html += '<div class="section">';
         html += '<div class="section-title">🎯 رفتار</div>';
-        html += '<table><thead><tr><th>رفتار مثبت</th><th>رفتار منفی</th><th>کل ثبت‌ها</th></tr></thead><tbody>';
-        html += '<tr>';
-        html += '<td style="color:#10b981;font-weight:bold;">' + stats.behavior.positive + '</td>';
-        html += '<td style="color:#ef4444;font-weight:bold;">' + stats.behavior.negative + '</td>';
-        html += '<td>' + stats.behavior.count + '</td>';
-        html += '</tr></tbody></table>';
+        html += cardBehaviorTable(stats, false);
         html += '</div>';
 
         // تکالیف
@@ -5105,90 +5280,34 @@
         }
 
         // امضا
-        html += '<div style="margin-top:30px;display:flex;justify-content:space-between;font-size:11pt;">';
+        html += '<div style="margin-top:24px;display:flex;justify-content:space-between;font-size:11pt;">';
         html += '<div>امضای معلم: ______________</div>';
         html += '<div>تاریخ: ' + getTodayJalaliStr() + '</div>';
         html += '</div>';
+        return html;
+    }
 
+    function printStudentReport(cls, student, stats) {
+        var html = '<html><head><meta charset="UTF-8">';
+        html += '<title>کارنامه ' + escapeHtml((student.family || '') + ' ' + (student.name || '')) + '</title>';
+        html += '<style>' + cardCss() + '</style></head><body>';
+        html += '<div class="page">' + buildCardBody(cls, student, stats) + '</div>';
         html += '</body></html>';
         openPrintWindow(html);
     }
 
-    // ===== چاپ همهٔ کارنامه‌ها =====
+    // ===== چاپ همهٔ کارنامه‌ها (هر دانش‌آموز یک صفحه) =====
     function printAllStudentReports(cls) {
         var students = cls.students || [];
         if (students.length === 0) { alert('❌ کلاس دانش‌آموز ندارد.'); return; }
         if (!confirm('چاپ کارنامه برای ' + students.length + ' دانش‌آموز؟')) return;
 
-        var html = '<html><head><meta charset="UTF-8">';
-        html += '<style>';
-        html += '@page { size: A4 portrait; margin: 0.8cm 1cm 0.3cm 1cm; }';
-        html += 'body { font-family: "Vazirmatn", "B Nazanin", "Tahoma", sans-serif; direction: rtl; margin: 0; color: #000; }';
-        html += '.page { page-break-after: always; }';
-        html += '.page:last-child { page-break-after: auto; }';
-        html += '.h { text-align: center; font-weight: bold; font-size: 18pt; padding: 6px 0 10px 0; border-bottom: 2px solid #000; margin-bottom: 12px; }';
-        html += '.info-block { background: #f5f5f5; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 12pt; }';
-        html += '.info-block div { margin-bottom: 4px; }';
-        html += '.section { margin-bottom: 12px; }';
-        html += '.section-title { background: #e8e8e8; padding: 6px 10px; border-radius: 5px; font-weight: bold; font-size: 13pt; margin-bottom: 6px; border-right: 4px solid #2563eb; }';
-        html += 'table { border-collapse: collapse; width: 100%; font-size: 11pt; }';
-        html += 'th, td { border: 1px solid #000; padding: 5px 8px; text-align: center; }';
-        html += 'th { background: #e8e8e8; font-weight: bold; }';
-        html += 'td.name { text-align: right; font-weight: 600; }';
-        html += 'td.lv1 { color: #10b981; font-weight: bold; }';
-        html += 'td.lv2 { color: #3b82f6; font-weight: bold; }';
-        html += 'td.lv3 { color: #f59e0b; font-weight: bold; }';
-        html += 'td.lv4 { color: #ef4444; font-weight: bold; }';
-        html += '</style></head><body>';
-
+        var html = '<html><head><meta charset="UTF-8"><title>کارنامه‌ها</title>';
+        html += '<style>' + cardCss() + '</style></head><body>';
         students.forEach(function(student) {
             var stats = calcStudentStats(cls, student);
-
-            html += '<div class="page">';
-            html += '<div class="h">کارنامهٔ دانش‌آموز</div>';
-            html += '<div class="info-block">';
-            html += '<div><b>نام و نام خانوادگی:</b> ' + escapeHtml((student.family || '') + ' ' + (student.name || '')) + '</div>';
-            if (student.father) html += '<div><b>نام پدر:</b> ' + escapeHtml(student.father) + '</div>';
-            if (student.codemelli) html += '<div><b>کد ملی:</b> ' + escapeHtml(student.codemelli) + '</div>';
-            html += '<div><b>کلاس:</b> ' + escapeHtml(cls.className) + '</div>';
-            html += '</div>';
-
-            html += '<div class="section">';
-            html += '<div class="section-title">📝 نمرات</div>';
-            if (Object.keys(stats.grades).length === 0) {
-                html += '<div style="text-align:center;padding:10px;color:#999;">نمره‌ای ثبت نشده</div>';
-            } else {
-                html += '<table><thead><tr><th>درس</th><th>ارزیابی</th></tr></thead><tbody>';
-                Object.keys(stats.grades).forEach(function(subj) {
-                    var g = stats.grades[subj];
-                    var lvl = Math.round(g.avgLevel);
-                    if (lvl < 1) lvl = 1;
-                    if (lvl > 4) lvl = 4;
-                    html += '<tr><td class="name">' + escapeHtml(subj) + '</td><td class="lv' + lvl + '">' + DESC_LEVELS[lvl].label + '</td></tr>';
-                });
-                html += '</tbody></table>';
-            }
-            html += '</div>';
-
-            html += '<div class="section">';
-            html += '<div class="section-title">✅ حضور</div>';
-            html += '<table><thead><tr><th>حاضر</th><th>غایب</th><th>تأخیر</th><th>مرخصی</th></tr></thead><tbody>';
-            html += '<tr><td style="color:#10b981;font-weight:bold;">' + stats.attendance.present + '</td>';
-            html += '<td style="color:#ef4444;font-weight:bold;">' + stats.attendance.absent + '</td>';
-            html += '<td style="color:#f59e0b;font-weight:bold;">' + stats.attendance.late + '</td>';
-            html += '<td style="color:#3b82f6;font-weight:bold;">' + stats.attendance.excused + '</td></tr>';
-            html += '</tbody></table></div>';
-
-            html += '<div class="section">';
-            html += '<div class="section-title">🎯 رفتار</div>';
-            html += '<table><thead><tr><th>رفتار مثبت</th><th>رفتار منفی</th></tr></thead><tbody>';
-            html += '<tr><td style="color:#10b981;font-weight:bold;">' + stats.behavior.positive + '</td>';
-            html += '<td style="color:#ef4444;font-weight:bold;">' + stats.behavior.negative + '</td></tr>';
-            html += '</tbody></table></div>';
-
-            html += '</div>';
+            html += '<div class="page">' + buildCardBody(cls, student, stats) + '</div>';
         });
-
         html += '</body></html>';
         openPrintWindow(html);
     }
@@ -5206,21 +5325,23 @@
         });
     }
 
-    if (reportFromInput) {
-        reportFromInput.addEventListener('change', function() {
-            var v = this.value.trim();
-            reportFilterFrom = v;
-            renderReports();
-        });
+    fillMonthOptions(reportFromInput, 'از ابتدای سال');
+    fillMonthOptions(reportToInput, 'تا پایان سال');
+
+    function applyReportMonthFilter() {
+        if (reportFromInput && reportToInput && reportFromInput.value && reportToInput.value) {
+            var fi = SCHOOL_MONTHS.indexOf(reportFromInput.value);
+            var ti = SCHOOL_MONTHS.indexOf(reportToInput.value);
+            if (fi > ti) { var tmp = reportFromInput.value; reportFromInput.value = reportToInput.value; reportToInput.value = tmp; }
+        }
+        var rk = monthRangeKeys(reportFromInput ? reportFromInput.value : '', reportToInput ? reportToInput.value : '');
+        reportFilterFrom = rk.from;
+        reportFilterTo = rk.to;
+        renderReports();
     }
 
-    if (reportToInput) {
-        reportToInput.addEventListener('change', function() {
-            var v = this.value.trim();
-            reportFilterTo = v;
-            renderReports();
-        });
-    }
+    if (reportFromInput) reportFromInput.addEventListener('change', applyReportMonthFilter);
+    if (reportToInput) reportToInput.addEventListener('change', applyReportMonthFilter);
 
     document.getElementById('btnReportReset').addEventListener('click', function() {
         if (reportFromInput) reportFromInput.value = '';
@@ -5281,8 +5402,6 @@
         if (el) el.value = appSettings.teacherName || '';
         el = document.getElementById('setSchoolName');
         if (el) el.value = appSettings.schoolName || '';
-        el = document.getElementById('setSchoolYear');
-        if (el) el.value = appSettings.schoolYear || '';
         el = document.getElementById('setFontSize');
         if (el) el.value = appSettings.fontSize || 'normal';
 
@@ -5337,11 +5456,9 @@
     document.getElementById('btnSaveSettings').addEventListener('click', function() {
         var e1 = document.getElementById('setTeacherName');
         var e2 = document.getElementById('setSchoolName');
-        var e3 = document.getElementById('setSchoolYear');
 
         appSettings.teacherName = e1 ? e1.value.trim() : '';
         appSettings.schoolName = e2 ? e2.value.trim() : '';
-        appSettings.schoolYear = e3 ? e3.value.trim() : '';
         saveSettings();
 
         var self = this, orig = self.textContent;
@@ -5374,7 +5491,8 @@
     // ===== پشتیبان‌گیری کامل =====
     document.getElementById('btnFullBackup').addEventListener('click', function() {
         var backup = {
-            version: '1.0',
+            version: '1.1',
+            academicYear: yearsState.current,
             exportDate: new Date().toISOString(),
             appData: appData,
             attendanceData: attendanceData,
@@ -5420,7 +5538,11 @@
                 return;
             }
 
-            if (!confirm('⚠️ بازیابی از پشتیبان:\n\nهمهٔ داده‌های فعلی پاک می‌شوند و داده‌های فایل جایگزین می‌شوند.\n\nمطمئنی؟')) return;
+            var yrNote = '\n\nداده‌ها در سال تحصیلی فعال (' + yearLabel(yearsState.current) + ') بازیابی می‌شوند.';
+            if (parsed.academicYear && parsed.academicYear !== yearsState.current) {
+                yrNote += '\n⚠️ این فایل مربوط به سال تحصیلی ' + yearLabel(parsed.academicYear) + ' است.';
+            }
+            if (!confirm('⚠️ بازیابی از پشتیبان:\n\nهمهٔ داده‌های فعلیِ این سال تحصیلی پاک می‌شوند و داده‌های فایل جایگزین می‌شوند.' + yrNote + '\n\nمطمئنی؟')) return;
 
             try {
                 if (parsed.appData) {
@@ -5506,14 +5628,16 @@
     });
 
     document.getElementById('btnFullReset').addEventListener('click', function() {
-        if (!confirm('⚠️⚠️ هشدار ⚠️⚠️\n\nهمهٔ داده‌های اپ (کلاس‌ها، دانش‌آموزان، حضور، نمرات، رفتار، تکالیف) کاملاً پاک می‌شوند.\n\nمطمئنی؟')) return;
+        if (!confirm('⚠️⚠️ هشدار ⚠️⚠️\n\nهمهٔ داده‌های اپ در همهٔ سال‌های تحصیلی (کلاس‌ها، دانش‌آموزان، حضور، نمرات، رفتار، تکالیف) کاملاً پاک می‌شوند.\n\nمطمئنی؟')) return;
         if (!confirm('آخرین فرصت! مطمئنی؟')) return;
 
-        var keysToRemove = [
-            STORAGE_KEY, ATT_STORAGE_KEY, GRADES_STORAGE_KEY,
-            BEHAVIORS_STORAGE_KEY, HOMEWORK_STORAGE_KEY, SUBJECTS_STORAGE_KEY,
-            SETTINGS_KEY, 'cm_theme', 'cm_active_page'
-        ];
+        var keysToRemove = [];
+        try {
+            for (var ki = 0; ki < localStorage.length; ki++) {
+                var kk = localStorage.key(ki);
+                if (kk && kk.indexOf('cm_') === 0) keysToRemove.push(kk);
+            }
+        } catch(e) {}
         keysToRemove.forEach(function(k) {
             try { localStorage.removeItem(k); } catch(e) {}
         });
@@ -5525,7 +5649,64 @@
     // ===== Hook صفحه =====
     function settingsPageHook() {
         renderSettings();
+        renderYearSelectors();
     }
+
+    // ===== سال تحصیلی: انتخاب و ایجاد =====
+    function renderYearSelectors() {
+        ['topYearSelect', 'setYearSelect'].forEach(function(id) {
+            var sel = document.getElementById(id);
+            if (!sel) return;
+            sel.innerHTML = '';
+            yearsState.list.slice().sort().reverse().forEach(function(y) {
+                var o = document.createElement('option');
+                o.value = y;
+                o.textContent = (id === 'topYearSelect' ? '📅 ' : '') + yearLabel(y);
+                sel.appendChild(o);
+            });
+            sel.value = yearsState.current;
+        });
+    }
+
+    function switchAcademicYear(y) {
+        if (!y || y === yearsState.current || yearsState.list.indexOf(y) < 0) return;
+        yearsState.current = y;
+        saveYears();
+        location.reload();
+    }
+
+    function createAcademicYear() {
+        var last = yearsState.list.slice().sort().pop();
+        var defStart = parseInt(last.split('-')[0], 10) + 1;
+        var input = prompt('سال تحصیلی جدید از چه سالی شروع می‌شود؟\n(مثلاً ' + toPersianNum(defStart) + ' برای سال تحصیلی ' + yearLabel(defStart + '-' + (defStart + 1)) + ')', String(defStart));
+        if (input === null) return;
+        var norm = String(input).replace(/[۰-۹]/g, function(d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); }).replace(/[٠-٩]/g, function(d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); });
+        var n = parseInt(norm, 10);
+        if (!n || n < 1380 || n > 1500) { alert('❌ سال نامعتبر است. مثال: ' + toPersianNum(defStart)); return; }
+        var ny = n + '-' + (n + 1);
+        if (yearsState.list.indexOf(ny) >= 0) {
+            if (confirm('سال تحصیلی ' + yearLabel(ny) + ' از قبل وجود دارد. به آن بروم؟')) switchAcademicYear(ny);
+            return;
+        }
+        var copy = confirm('سال تحصیلی ' + yearLabel(ny) + ' ساخته می‌شود.\n\nکلاس‌ها و دانش‌آموزان و فهرست دروس سال فعلی در سال جدید کپی شوند؟\n(نمرات، حضور، رفتار و تکالیف کپی نمی‌شوند.)\n\nOK = کپی شود  |  Cancel = سال جدیدِ خالی');
+        try {
+            if (copy) {
+                localStorage.setItem(yk('cm_data_v1', ny), JSON.stringify({ classes: JSON.parse(JSON.stringify(appData.classes || [])) }));
+                localStorage.setItem(yk('cm_subjects_v1', ny), JSON.stringify(subjectsList));
+            }
+        } catch(e) { alert('⚠️ خطا در کپی: ' + e.message); }
+        yearsState.list.push(ny);
+        yearsState.current = ny;
+        saveYears();
+        location.reload();
+    }
+
+    var topYearSel = document.getElementById('topYearSelect');
+    if (topYearSel) topYearSel.addEventListener('change', function() { switchAcademicYear(this.value); });
+    var setYearSel = document.getElementById('setYearSelect');
+    if (setYearSel) setYearSel.addEventListener('change', function() { switchAcademicYear(this.value); });
+    var btnNewYear = document.getElementById('btnNewYear');
+    if (btnNewYear) btnNewYear.addEventListener('click', createAcademicYear);
 
     /* ═══════════════════════════════════════════════════
        📱 PWA (Progressive Web App)
@@ -5617,6 +5798,7 @@
         attDateInput.value = attCurrentDate;
     }
 
+    renderYearSelectors();
     loadSubjects();
     loadGrades();
     loadBehaviors();
