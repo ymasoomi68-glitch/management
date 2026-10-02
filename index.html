@@ -11,7 +11,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="مدیریت کلاسی">
-<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjM4IiBmaWxsPSIjMjU2M2ViIi8+PHRleHQgeD0iOTYiIHk9IjEyOCIgZm9udC1zaXplPSI5NiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+8J+TkzwvdGV4dD48L3N2Zz4=">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
     /* ═══════════════════════════════════════════════════
        🎨 استایل‌های پایه
@@ -270,16 +271,21 @@
     .att-code { font-size: 11px; color: var(--text-muted); font-family: monospace; direction: ltr; margin-top: 2px; }
     .att-actions { display: flex; gap: 4px; flex-shrink: 0; }
     .att-btn {
-        width: 42px; height: 42px; border: 2px solid var(--border);
+        min-width: 70px; height: 42px; padding: 0 10px;
+        border: 2px solid var(--border);
         border-radius: 10px; background: var(--card); cursor: pointer;
-        font-size: 18px; display: flex; align-items: center;
-        justify-content: center; transition: all 0.15s; font-family: inherit;
+        font-size: 13px; font-weight: 700; color: var(--text-muted);
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.15s; font-family: inherit; white-space: nowrap;
     }
-    .att-btn:hover { border-color: var(--primary); transform: scale(1.05); }
+    .att-btn[data-status="present"] { border-color: rgba(16,185,129,0.55); color: #059669; }
+    .att-btn[data-status="absent"] { border-color: rgba(239,68,68,0.55); color: #dc2626; }
+    .att-btn[data-status="late"] { border-color: rgba(245,158,11,0.6); color: #d97706; }
+    .att-btn:hover { transform: scale(1.03); }
+    .att-btn:active { transform: scale(0.96); }
     .att-btn.selected[data-status="present"] { background: #10b981; border-color: #10b981; color: white; }
     .att-btn.selected[data-status="absent"] { background: #ef4444; border-color: #ef4444; color: white; }
     .att-btn.selected[data-status="late"] { background: #f59e0b; border-color: #f59e0b; color: white; }
-    .att-btn.selected[data-status="excused"] { background: #3b82f6; border-color: #3b82f6; color: white; }
 
     .report-days { display: flex; flex-wrap: wrap; gap: 6px; }
     .report-day {
@@ -290,7 +296,7 @@
     @media (max-width: 768px) {
         .att-row { flex-wrap: wrap; padding: 10px; }
         .att-actions { width: 100%; justify-content: space-between; }
-        .att-btn { flex: 1; max-width: 60px; }
+        .att-btn { flex: 1; min-width: 0; padding: 0 4px; font-size: 12px; }
     }
 
     /* ═══════════════════════════════════════════════════
@@ -418,6 +424,40 @@
         --border: #334155;
         --primary-light: #1e3a8a;
     }
+    body.dark {
+        --primary-dark: #93c5fd;
+    }
+    :where(body.dark) button { color: var(--text); }
+    body.dark .btn-primary:hover { background: #1d4ed8; }
+    body.dark .btn-success:hover { background: #059669; }
+    body.dark .btn-danger:hover { background: #dc2626; }
+    body.dark .topbar-title,
+    body.dark .page-title,
+    body.dark .report-tab.active { color: #93c5fd; }
+    body.dark .report-tab.active { border-bottom-color: #60a5fa; }
+    body.dark .page-title { color: var(--text); }
+    body.dark .att-num { background: #1e3a8a; color: #bfdbfe; }
+    body.dark .dash-icon { background: rgba(148,163,184,0.16) !important; }
+    body.dark .dash-value { color: #e2e8f0; }
+    /* دکمه‌های وضعیت: رنگ روشن‌تر برای خوانایی روی زمینهٔ تیره */
+    body.dark .att-btn[data-status="present"],
+    body.dark .hw-status-btn[data-status="done"],
+    body.dark .desc-btn[data-level="1"] { color: #6ee7b7; border-color: rgba(52,211,153,0.6); }
+    body.dark .att-btn[data-status="absent"],
+    body.dark .hw-status-btn[data-status="notdone"],
+    body.dark .desc-btn[data-level="4"] { color: #fca5a5; border-color: rgba(248,113,113,0.6); }
+    body.dark .att-btn[data-status="late"],
+    body.dark .hw-status-btn[data-status="partial"],
+    body.dark .desc-btn[data-level="3"] { color: #fcd34d; border-color: rgba(251,191,36,0.65); }
+    body.dark .desc-btn[data-level="2"] { color: #93c5fd; border-color: rgba(96,165,250,0.65); }
+    body.dark .att-btn.selected,
+    body.dark .hw-status-btn.selected,
+    body.dark .desc-btn.selected { color: #fff; }
+    body.dark .grade-context { background: #1e3a8a; color: #dbeafe; }
+    body.dark .subject-chip { background: #0f172a; }
+    body.dark .subject-chip.active { background: var(--primary); }
+    body.dark .gs-chip { background: #0f172a; }
+    body.dark .quick-reason:hover { background: #1e3a8a; }
     body.dark .topbar { background: var(--card); }
     body.dark .sidebar { background: var(--card); }
     body.dark .form-input,
@@ -509,6 +549,18 @@
         border-color: var(--primary);
     }
     body.dark .quick-reason { background: #0f172a; }
+    .quick-reason.custom { border-style: dashed; padding-left: 6px; }
+    .quick-reason .qr-x {
+        display: inline-block; margin-right: 6px; width: 16px; height: 16px; line-height: 16px;
+        text-align: center; border-radius: 50%; font-size: 10px; color: var(--text-muted);
+    }
+    .quick-reason .qr-x:hover { background: #ef4444; color: #fff; }
+    .quick-reasons-label { font-size: 11px; color: var(--text-muted); width: 100%; margin-top: 2px; }
+    .grade-note { margin-bottom: 10px; }
+    .grade-note .form-input { width: 100%; }
+    .abs-choice { display: flex; gap: 10px; margin: 14px 0 6px; }
+    .abs-choice .btn { flex: 1; padding: 14px 8px; font-size: 15px; font-weight: 700; }
+    .il { display: flex; gap: 28px; flex-wrap: nowrap; }
 
     /* لاگ رفتار */
     .behavior-log-item {
@@ -645,19 +697,23 @@
         display: flex; gap: 6px; flex-shrink: 0;
     }
     .hw-status-btn {
-        width: 42px; height: 42px;
+        min-width: 96px; height: 42px; padding: 0 10px;
         border: 2px solid var(--border);
         border-radius: 10px;
         background: var(--card);
         cursor: pointer;
-        font-size: 18px;
+        font-size: 13px; font-weight: 700;
         display: flex; align-items: center; justify-content: center;
-        transition: all 0.15s; font-family: inherit;
+        transition: all 0.15s; font-family: inherit; white-space: nowrap;
     }
-    .hw-status-btn:hover { border-color: var(--primary); transform: scale(1.05); }
+    .hw-status-btn[data-status="done"] { border-color: rgba(16,185,129,0.6); color: #059669; }
+    .hw-status-btn[data-status="partial"] { border-color: rgba(245,158,11,0.65); color: #b45309; }
+    .hw-status-btn[data-status="notdone"] { border-color: rgba(239,68,68,0.6); color: #dc2626; }
+    .hw-status-btn:hover { transform: scale(1.03); }
+    .hw-status-btn:active { transform: scale(0.96); }
     .hw-status-btn.selected[data-status="done"] { background: #10b981; border-color: #10b981; color: white; }
-    .hw-status-btn.selected[data-status="notdone"] { background: #ef4444; border-color: #ef4444; color: white; }
     .hw-status-btn.selected[data-status="partial"] { background: #f59e0b; border-color: #f59e0b; color: white; }
+    .hw-status-btn.selected[data-status="notdone"] { background: #ef4444; border-color: #ef4444; color: white; }
 
     /* نوار پیشرفت */
     .hw-progress {
@@ -674,7 +730,7 @@
     @media (max-width: 768px) {
         .hw-student-row { flex-wrap: wrap; }
         .hw-status-actions { width: 100%; justify-content: space-between; }
-        .hw-status-btn { flex: 1; max-width: 60px; }
+        .hw-status-btn { flex: 1; min-width: 0; padding: 0 4px; font-size: 12px; }
     }
 
     /* ═══════════════════════════════════════════════════
@@ -1032,6 +1088,7 @@
                 </select>
                 <button class="btn btn-primary btn-sm" id="btnAddStudent">➕ افزودن دانش‌آموز</button>
                 <button class="btn btn-success btn-sm" id="btnPrintClass">🖨️ چاپ / PDF لیست کلاس</button>
+                <button class="btn btn-outline btn-sm" id="btnExcelImport">📋 ورود لیست کلاس از اکسل</button>
             </div>
 
             <div class="toolbar">
@@ -1087,10 +1144,17 @@
                     </div>
                 </div>
                 <div class="dash-card">
+                    <div class="dash-icon" style="background:#dbeafe;">📄</div>
+                    <div class="dash-info">
+                        <div class="dash-value" id="attAbsentJ" style="color:#3b82f6;">0</div>
+                        <div class="dash-label">غایب موجه</div>
+                    </div>
+                </div>
+                <div class="dash-card">
                     <div class="dash-icon" style="background:#fee2e2;">❌</div>
                     <div class="dash-info">
-                        <div class="dash-value" id="attAbsent" style="color:#ef4444;">0</div>
-                        <div class="dash-label">غایب</div>
+                        <div class="dash-value" id="attAbsentU" style="color:#ef4444;">0</div>
+                        <div class="dash-label">غایب غیرموجه</div>
                     </div>
                 </div>
                 <div class="dash-card">
@@ -1098,13 +1162,6 @@
                     <div class="dash-info">
                         <div class="dash-value" id="attLate" style="color:#f59e0b;">0</div>
                         <div class="dash-label">تأخیر</div>
-                    </div>
-                </div>
-                <div class="dash-card">
-                    <div class="dash-icon" style="background:#dbeafe;">🏥</div>
-                    <div class="dash-info">
-                        <div class="dash-value" id="attExcused" style="color:#3b82f6;">0</div>
-                        <div class="dash-label">مرخصی</div>
                     </div>
                 </div>
             </div>
@@ -1567,6 +1624,37 @@
     </div>
 </div>
 
+<!-- مودال ورود لیست از اکسل -->
+<div class="modal-overlay" id="modalExcel">
+    <div class="modal">
+        <h2 class="modal-title">📋 ورود لیست کلاس از اکسل</h2>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;line-height:1.9;">
+            ۱) فایل نمونه را دانلود و تکمیل کنید (نام، نام خانوادگی، نام پدر، کد ملی).<br>
+            ۲) فایل تکمیل‌شده را در همین‌جا انتخاب کنید.
+        </p>
+        <button class="btn btn-outline btn-sm" id="btnDownloadSample" style="margin-bottom:14px;">📥 دانلود فایل اکسل نمونه</button>
+        <div class="form-group">
+            <label class="form-label">کلاس مقصد *</label>
+            <select class="form-select" id="excelClassSelect"></select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">فایل اکسل (xlsx) *</label>
+            <input type="file" id="excelFileInput" accept=".xlsx,.csv" class="form-input">
+        </div>
+        <div class="form-group">
+            <label class="form-label">روش ورود</label>
+            <select class="form-select" id="excelMode">
+                <option value="add">اضافه شود به لیست فعلی (تکراری‌ها نادیده گرفته شوند)</option>
+                <option value="replace">جایگزین لیست فعلی شود</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" data-close-modal="modalExcel">انصراف</button>
+            <button class="btn btn-success" id="btnDoExcelImport">📥 ورود دانش‌آموزان</button>
+        </div>
+    </div>
+</div>
+
 <!-- مودال Import JSON -->
 <div class="modal-overlay" id="modalImport">
     <div class="modal">
@@ -1824,7 +1912,8 @@
     }
 
     function yearLabel(y) {
-        return String(y || yearsState.current).split('-').map(function(p) { return toPersianNum(parseInt(p, 10)); }).join('-');
+        // نشانهٔ چپ‌به‌راست دور خط تیره تا ۱۴۰۵-۱۴۰۶ در متن راست‌چین برعکس نشان داده نشود
+        return String(y || yearsState.current).split('-').map(function(p) { return toPersianNum(parseInt(p, 10)); }).join('\u200E-\u200E');
     }
 
     // «۱۴۰۵/۰۷» برای ماهِ mm در سال تحصیلی
@@ -1982,15 +2071,37 @@
 
         if (pageName === 'students') refreshClassDropdown();
         if (pageName === 'classes') updateDashboard();
-        if (pageName === 'attendance') refreshAttClassDropdown();
+        if (pageName === 'attendance') {
+            refreshAttClassDropdown();
+            if (!attCurrentDate) {
+                attCurrentDate = getTodayJalaliStr();
+                var adi = document.getElementById('attDate');
+                if (adi) adi.value = attCurrentDate;
+            }
+        }
         if (pageName === 'grades') gradePageHook();
         if (pageName === 'behavior') behaviorPageHook();
         if (pageName === 'homework') homeworkPageHook();
         if (pageName === 'reports') reportsPageHook();
         if (pageName === 'settings') settingsPageHook();
 
+        autoSelectSingleClass(pageName);
+
         /* 📌 [STEP-5+: PAGE-HOOKS] - هوک‌های صفحات جدید را
            دقیقاً قبل از این خط اضافه کن */
+    }
+
+    // اگر فقط یک کلاس تعریف شده باشد، در همهٔ بخش‌ها همان کلاس پیش‌فرض انتخاب می‌شود
+    function autoSelectSingleClass(pageName) {
+        if (!appData || !appData.classes || appData.classes.length !== 1) return;
+        var map = {
+            students: 'studentClassSelect', attendance: 'attClassSelect', grades: 'gradeClassSelect',
+            behavior: 'behaviorClassSelect', homework: 'hwClassSelect', reports: 'reportClassSelect'
+        };
+        var sel = document.getElementById(map[pageName]);
+        if (!sel || sel.value !== '' || !sel.querySelector('option[value="0"]')) return;
+        sel.value = '0';
+        sel.dispatchEvent(new Event('change'));
     }
 
     navItems.forEach(function(item) {
@@ -2695,6 +2806,275 @@
         }, 600);
     }
 
+    /* ═══════════════════════════════════════════════════
+       📋 ورود لیست کلاس از اکسل (بدون نیاز به کتابخانهٔ خارجی)
+       ═══════════════════════════════════════════════════ */
+    var SAMPLE_XLSX_B64 = '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';
+
+    function downloadSampleExcel() {
+        var bin = atob(SAMPLE_XLSX_B64), u8 = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        var blob = new Blob([u8], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'نمونه_لیست_کلاس.xlsx';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(a.href); }, 1500);
+    }
+
+    function xlsxInflate(u8) {
+        var ds = new DecompressionStream('deflate-raw');
+        return new Response(new Blob([u8]).stream().pipeThrough(ds)).arrayBuffer().then(function(b) { return new Uint8Array(b); });
+    }
+
+    function xlsxUnzip(buf) {
+        var u8 = new Uint8Array(buf), dv = new DataView(buf), eocd = -1, i;
+        for (i = u8.length - 22; i >= Math.max(0, u8.length - 65600); i--) {
+            if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+        }
+        if (eocd < 0) throw new Error('این فایل، فایل اکسل (xlsx) معتبری نیست.');
+        var count = dv.getUint16(eocd + 10, true), p = dv.getUint32(eocd + 16, true), files = {}, dec = new TextDecoder('utf-8');
+        for (var n = 0; n < count; n++) {
+            if (dv.getUint32(p, true) !== 0x02014b50) break;
+            var method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true);
+            var nlen = dv.getUint16(p + 28, true), elen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true);
+            var lho = dv.getUint32(p + 42, true);
+            files[dec.decode(u8.subarray(p + 46, p + 46 + nlen))] = { method: method, csize: csize, lho: lho };
+            p += 46 + nlen + elen + clen;
+        }
+        return { files: files, u8: u8, dv: dv };
+    }
+
+    function xlsxRead(z, name) {
+        var f = z.files[name];
+        if (!f) return Promise.resolve(null);
+        var nlen = z.dv.getUint16(f.lho + 26, true), elen = z.dv.getUint16(f.lho + 28, true);
+        var start = f.lho + 30 + nlen + elen, data = z.u8.subarray(start, start + f.csize);
+        var done = function(u) { return new TextDecoder('utf-8').decode(u); };
+        if (f.method === 0) return Promise.resolve(done(data));
+        if (f.method === 8) return xlsxInflate(data).then(done);
+        return Promise.reject(new Error('نوع فشرده‌سازی فایل پشتیبانی نمی‌شود.'));
+    }
+
+    function xlsxColIndex(ref) {
+        var m = String(ref || '').match(/^([A-Z]+)/), n = 0;
+        if (!m) return 0;
+        for (var i = 0; i < m[1].length; i++) n = n * 26 + (m[1].charCodeAt(i) - 64);
+        return n - 1;
+    }
+
+    function xlsxParseRows(xmlText, shared) {
+        var doc = new DOMParser().parseFromString(xmlText, 'application/xml');
+        var rows = [];
+        var rowEls = doc.getElementsByTagName('row');
+        for (var r = 0; r < rowEls.length; r++) {
+            var cells = rowEls[r].getElementsByTagName('c'), row = [];
+            for (var c = 0; c < cells.length; c++) {
+                var cell = cells[c], t = cell.getAttribute('t'), val = '';
+                var vEl = cell.getElementsByTagName('v')[0];
+                if (t === 'inlineStr') {
+                    var ts = cell.getElementsByTagName('t');
+                    for (var k = 0; k < ts.length; k++) val += ts[k].textContent;
+                } else if (vEl) {
+                    val = vEl.textContent;
+                    if (t === 's') val = shared[parseInt(val, 10)] || '';
+                    else if (!t || t === 'n') {
+                        if (/e/i.test(val)) { var num = Number(val); if (isFinite(num)) val = num.toFixed(0); }
+                    }
+                }
+                row[xlsxColIndex(cell.getAttribute('r'))] = String(val);
+            }
+            rows.push(row);
+        }
+        return rows;
+    }
+
+    function xlsxToRows(buf) {
+        var z = xlsxUnzip(buf);
+        return xlsxRead(z, 'xl/sharedStrings.xml').then(function(sx) {
+            var shared = [];
+            if (sx) {
+                var d = new DOMParser().parseFromString(sx, 'application/xml'), sis = d.getElementsByTagName('si');
+                for (var i = 0; i < sis.length; i++) {
+                    var txt = '', ts = sis[i].getElementsByTagName('t');
+                    for (var k = 0; k < ts.length; k++) {
+                        if (ts[k].parentNode.nodeName === 'rPh') continue;
+                        txt += ts[k].textContent;
+                    }
+                    shared.push(txt);
+                }
+            }
+            return xlsxRead(z, 'xl/workbook.xml').then(function(wb) {
+                return xlsxRead(z, 'xl/_rels/workbook.xml.rels').then(function(rels) {
+                    var target = 'xl/worksheets/sheet1.xml';
+                    try {
+                        var wd = new DOMParser().parseFromString(wb, 'application/xml');
+                        var sh = wd.getElementsByTagName('sheet')[0];
+                        var rid = sh && (sh.getAttribute('r:id') || sh.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id'));
+                        var rd = new DOMParser().parseFromString(rels, 'application/xml'), rl = rd.getElementsByTagName('Relationship');
+                        for (var i = 0; i < rl.length; i++) {
+                            if (rl[i].getAttribute('Id') === rid) {
+                                var tg = rl[i].getAttribute('Target');
+                                target = tg.charAt(0) === '/' ? tg.substring(1) : 'xl/' + tg.replace(/^\.\//, '');
+                            }
+                        }
+                    } catch(e) {}
+                    if (!z.files[target]) {
+                        Object.keys(z.files).forEach(function(n) { if (/^xl\/worksheets\/sheet\d+\.xml$/.test(n) && !z.files['xl/worksheets/sheet1.xml']) target = n; });
+                    }
+                    return xlsxRead(z, target).then(function(sheetXml) {
+                        if (!sheetXml) throw new Error('برگهٔ اطلاعات در فایل پیدا نشد.');
+                        return xlsxParseRows(sheetXml, shared);
+                    });
+                });
+            });
+        });
+    }
+
+    function csvToRows(text) {
+        text = text.replace(/^\ufeff/, '');
+        var first = text.split(/\r?\n/)[0] || '';
+        var delim = (first.split(';').length > first.split(',').length) ? ';' : (first.indexOf('\t') >= 0 ? '\t' : ',');
+        var rows = [], row = [], cur = '', q = false;
+        for (var i = 0; i < text.length; i++) {
+            var ch = text.charAt(i);
+            if (q) {
+                if (ch === '"') { if (text.charAt(i + 1) === '"') { cur += '"'; i++; } else q = false; }
+                else cur += ch;
+            } else if (ch === '"') q = true;
+            else if (ch === delim) { row.push(cur); cur = ''; }
+            else if (ch === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+            else if (ch !== '\r') cur += ch;
+        }
+        if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+        return rows;
+    }
+
+    function faKey(sv) {
+        return String(sv || '').replace(/ي/g, 'ی').replace(/ك/g, 'ک').replace(/[\u200c\u200f\u200e\s]+/g, '').toLowerCase();
+    }
+    function faDigits(sv) {
+        return String(sv || '')
+            .replace(/[۰-۹]/g, function(d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); })
+            .replace(/[٠-٩]/g, function(d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); });
+    }
+    function faText(sv) {
+        return String(sv || '').replace(/ي/g, 'ی').replace(/ك/g, 'ک').replace(/\s+/g, ' ').trim();
+    }
+
+    function headerRole(h) {
+        var k = faKey(h);
+        if (!k) return '';
+        if (k.indexOf('پدر') >= 0) return 'father';
+        if (k.indexOf('ملی') >= 0 || k.indexOf('کد') >= 0) return 'code';
+        if (k.indexOf('خانوادگی') >= 0) return (k.indexOf('نامو') >= 0 || k.indexOf('نامکامل') >= 0) ? 'full' : 'family';
+        if (k === 'نام') return 'name';
+        if (k.indexOf('نام') >= 0) return 'full';
+        return '';
+    }
+
+    function rowsToStudents(rows) {
+        var cols = null, startRow = 0, r, c;
+        for (r = 0; r < Math.min(rows.length, 6); r++) {
+            var found = {}, cnt = 0;
+            for (c = 0; c < (rows[r] || []).length; c++) {
+                var role = headerRole(rows[r][c]);
+                if (role && found[role] === undefined) { found[role] = c; cnt++; }
+            }
+            if (cnt >= 2) { cols = found; startRow = r + 1; break; }
+        }
+        if (!cols) { cols = { name: 0, family: 1, father: 2, code: 3 }; startRow = 0; }
+
+        var out = [], sampleCodes = { '0012345678': 1, '0098765432': 1 };
+        for (r = startRow; r < rows.length; r++) {
+            var row = rows[r] || [];
+            var g = function(k) { return cols[k] === undefined ? '' : faText(row[cols[k]]); };
+            var name = g('name'), family = g('family'), father = g('father');
+            var code = faDigits(g('code')).replace(/\D/g, '');
+            if (cols.full !== undefined && !name && !family) {
+                var parts = g('full').split(' ');
+                family = parts.length > 1 ? parts.pop() : '';
+                name = parts.join(' ');
+                if (!name) { name = family; family = ''; }
+            }
+            if (!name && !family) continue;
+            if (code && code.length < 10) code = ('0000000000' + code).slice(-10);
+            if (sampleCodes[code]) continue;
+            out.push({ name: name, family: family, father: father, codemelli: code });
+        }
+        return out;
+    }
+
+    function fillExcelClassSelect() {
+        var sel = document.getElementById('excelClassSelect');
+        sel.innerHTML = '';
+        appData.classes.forEach(function(c, i) {
+            var o = document.createElement('option');
+            o.value = i;
+            o.textContent = c.className + (c.gradeName ? ' - ' + c.gradeName : '');
+            sel.appendChild(o);
+        });
+        if (currentClassIndex >= 0 && currentClassIndex < appData.classes.length) sel.value = currentClassIndex;
+    }
+
+    document.getElementById('btnExcelImport').addEventListener('click', function() {
+        if (appData.classes.length === 0) { alert('❌ ابتدا یک کلاس بسازید.'); return; }
+        fillExcelClassSelect();
+        document.getElementById('excelFileInput').value = '';
+        document.getElementById('modalExcel').classList.add('open');
+    });
+    document.getElementById('btnDownloadSample').addEventListener('click', downloadSampleExcel);
+
+    document.getElementById('btnDoExcelImport').addEventListener('click', function() {
+        var file = document.getElementById('excelFileInput').files[0];
+        var idx = parseInt(document.getElementById('excelClassSelect').value, 10);
+        if (isNaN(idx) || !appData.classes[idx]) { alert('❌ کلاس مقصد را انتخاب کنید.'); return; }
+        if (!file) { alert('❌ فایل اکسل را انتخاب کنید.'); return; }
+
+        var isCsv = /\.csv$/i.test(file.name);
+        var reader = new FileReader();
+        reader.onerror = function() { alert('❌ خواندن فایل ممکن نشد.'); };
+        reader.onload = function(ev) {
+            var p;
+            try {
+                if (isCsv) p = Promise.resolve(csvToRows(new TextDecoder('utf-8').decode(new Uint8Array(ev.target.result))));
+                else {
+                    if (typeof DecompressionStream === 'undefined') throw new Error('مرورگر شما از خواندن مستقیم xlsx پشتیبانی نمی‌کند. فایل را به‌صورت CSV (UTF-8) ذخیره کنید یا مرورگر را به‌روز کنید.');
+                    p = xlsxToRows(ev.target.result);
+                }
+            } catch(e) { alert('❌ ' + e.message); return; }
+
+            p.then(function(rows) {
+                var list = rowsToStudents(rows);
+                if (list.length === 0) { alert('❌ هیچ دانش‌آموزی برای ورود پیدا نشد.\nسطر اول باید سرتیتر «نام»، «نام خانوادگی»، «نام پدر» و «کد ملی» باشد و سطرهای نمونه نادیده گرفته می‌شوند.'); return; }
+
+                var cls = appData.classes[idx];
+                var mode = document.getElementById('excelMode').value;
+                if (mode === 'replace' && (cls.students || []).length > 0) {
+                    if (!confirm('لیست فعلی ' + cls.students.length + ' دانش‌آموز پاک و با لیست جدید جایگزین می‌شود. مطمئنید؟')) return;
+                }
+                var base = mode === 'replace' ? [] : (cls.students || []).slice();
+                var added = 0, skipped = 0;
+                list.forEach(function(st) {
+                    var dup = base.some(function(x) {
+                        if (st.codemelli && x.codemelli) return x.codemelli === st.codemelli;
+                        return x.name === st.name && x.family === st.family && (x.father || '') === (st.father || '');
+                    });
+                    if (dup) { skipped++; return; }
+                    base.push({ id: genId(), name: st.name, family: st.family, father: st.father, codemelli: st.codemelli, fatherPhone: '', motherPhone: '', shadPhone: '' });
+                    added++;
+                });
+                cls.students = base;
+                saveData();
+                renderClasses();
+                closeModal('modalExcel');
+                selectClassInStudentPage(idx);
+                alert('✅ ' + toPersianNum(added) + ' دانش‌آموز وارد شد.' + (skipped ? '\n' + toPersianNum(skipped) + ' مورد تکراری نادیده گرفته شد.' : ''));
+            }).catch(function(e) { alert('❌ ' + (e && e.message ? e.message : 'خطا در خواندن فایل')); });
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
     document.getElementById('btnPrintClass').addEventListener('click', function() {
         if (currentClassIndex < 0) { alert('❌ ابتدا یک کلاس انتخاب کنید.'); return; }
         printClassListPDF();
@@ -2709,11 +3089,32 @@
     var attendanceData = {};
     var ATT_STORAGE_KEY = yk('cm_attendance_v1');
 
+    // وضعیت‌ها: present | late | absent_j (غایب موجه) | absent_u (غایب غیرموجه)
+    // دادهٔ قدیمی: absent ← غیرموجه ، excused (مرخصی) ← موجه
+    function migrateAttendance() {
+        Object.keys(attendanceData || {}).forEach(function(k) {
+            var day = attendanceData[k] || {};
+            Object.keys(day).forEach(function(sid) {
+                if (day[sid] === 'absent') day[sid] = 'absent_u';
+                else if (day[sid] === 'excused') day[sid] = 'absent_j';
+            });
+        });
+    }
+
+    function newAttStats() { return { present: 0, late: 0, absent: 0, absentJ: 0, absentU: 0 }; }
+    function addAttStat(stats, st) {
+        if (st === 'present') stats.present++;
+        else if (st === 'late') stats.late++;
+        else if (st === 'absent_j') { stats.absentJ++; stats.absent++; }
+        else if (st === 'absent_u') { stats.absentU++; stats.absent++; }
+    }
+
     function loadAttendance() {
         try {
             var raw = localStorage.getItem(ATT_STORAGE_KEY);
             if (raw) attendanceData = JSON.parse(raw);
         } catch(e) { attendanceData = {}; }
+        migrateAttendance();
     }
 
     function saveAttendance() {
@@ -2792,15 +3193,14 @@
         if (dash) dash.style.display = 'grid';
         if (toolbar) toolbar.style.display = 'flex';
 
-        var stats = { present: 0, absent: 0, late: 0, excused: 0 };
+        var stats = newAttStats();
 
         var html = '<div class="card" style="padding:0;">';
         students.forEach(function(s, i) {
             var status = getStatus(cls, date, s.id);
-            if (status === 'present') stats.present++;
-            else if (status === 'absent') stats.absent++;
-            else if (status === 'late') stats.late++;
-            else if (status === 'excused') stats.excused++;
+            addAttStat(stats, status);
+            var isAbs = (status === 'absent_j' || status === 'absent_u');
+            var absLabel = status === 'absent_j' ? 'غایب (موجه)' : (status === 'absent_u' ? 'غایب (غیرموجه)' : 'غایب');
 
             html += '<div class="att-row" data-sid="' + s.id + '">';
             html += '<div class="att-num">' + toPersianNum(i + 1) + '</div>';
@@ -2809,10 +3209,9 @@
             if (s.codemelli) html += '<div class="att-code">' + escapeHtml(s.codemelli) + '</div>';
             html += '</div>';
             html += '<div class="att-actions">';
-            html += '<button class="att-btn' + (status === 'present' ? ' selected' : '') + '" data-status="present" title="حاضر">✅</button>';
-            html += '<button class="att-btn' + (status === 'absent' ? ' selected' : '') + '" data-status="absent" title="غایب">❌</button>';
-            html += '<button class="att-btn' + (status === 'late' ? ' selected' : '') + '" data-status="late" title="تأخیر">⏰</button>';
-            html += '<button class="att-btn' + (status === 'excused' ? ' selected' : '') + '" data-status="excused" title="مرخصی">🏥</button>';
+            html += '<button class="att-btn' + (status === 'present' ? ' selected' : '') + '" data-status="present">حاضر</button>';
+            html += '<button class="att-btn' + (isAbs ? ' selected' : '') + '" data-status="absent">' + absLabel + '</button>';
+            html += '<button class="att-btn' + (status === 'late' ? ' selected' : '') + '" data-status="late">تأخیر</button>';
             html += '</div></div>';
         });
         html += '</div>';
@@ -2826,36 +3225,64 @@
                 var sid = row.getAttribute('data-sid');
                 var status = btn.getAttribute('data-status');
                 var current = getStatus(cls, date, sid);
+
+                if (status === 'absent') {
+                    var stu = null;
+                    (cls.students || []).forEach(function(x) { if (x.id === sid) stu = x; });
+                    askAbsenceType(stu ? ((stu.family || '') + ' ' + (stu.name || '')) : '', current, function(type) {
+                        setStatus(cls, date, sid, type);
+                        renderAttendance();
+                    });
+                    return;
+                }
+
                 var newStatus = (current === status) ? '' : status;
                 setStatus(cls, date, sid, newStatus);
-
-                row.querySelectorAll('.att-btn').forEach(function(b) { b.classList.remove('selected'); });
-                if (newStatus) btn.classList.add('selected');
-                updateAttStats(cls, date);
+                renderAttendance();
             });
         });
     }
 
+    function askAbsenceType(studentName, current, cb) {
+        var modal = document.createElement('div');
+        modal.className = 'modal-overlay open';
+        var hasAbs = (current === 'absent_j' || current === 'absent_u');
+        modal.innerHTML =
+            '<div class="modal" style="max-width:420px;">' +
+                '<h2 class="modal-title">نوع غیبت</h2>' +
+                '<div style="font-size:14px;font-weight:600;">' + escapeHtml(studentName) + '</div>' +
+                '<div class="abs-choice">' +
+                    '<button class="btn btn-primary" data-t="absent_j">غایب موجه</button>' +
+                    '<button class="btn btn-danger" data-t="absent_u">غایب غیرموجه</button>' +
+                '</div>' +
+                '<div class="modal-actions">' +
+                    (hasAbs ? '<button class="btn btn-outline" data-t="">پاک کردن غیبت</button>' : '') +
+                    '<button class="btn btn-outline" data-t="__cancel">انصراف</button>' +
+                '</div>' +
+            '</div>';
+        document.body.appendChild(modal);
+        function close() { if (modal.parentNode) modal.parentNode.removeChild(modal); }
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) { close(); return; }
+            var t = e.target.getAttribute && e.target.getAttribute('data-t');
+            if (t === null || t === undefined) return;
+            close();
+            if (t === '__cancel') return;
+            cb(t);
+        });
+    }
+
     function updateAttStatsDisplay(stats) {
-        var pEl = document.getElementById('attPresent');
-        var aEl = document.getElementById('attAbsent');
-        var lEl = document.getElementById('attLate');
-        var eEl = document.getElementById('attExcused');
-        if (pEl) pEl.textContent = toPersianNum(stats.present);
-        if (aEl) aEl.textContent = toPersianNum(stats.absent);
-        if (lEl) lEl.textContent = toPersianNum(stats.late);
-        if (eEl) eEl.textContent = toPersianNum(stats.excused);
+        var m = { attPresent: stats.present, attAbsentJ: stats.absentJ, attAbsentU: stats.absentU, attLate: stats.late };
+        Object.keys(m).forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = toPersianNum(m[id]);
+        });
     }
 
     function updateAttStats(cls, date) {
-        var stats = { present: 0, absent: 0, late: 0, excused: 0 };
-        (cls.students || []).forEach(function(s) {
-            var st = getStatus(cls, date, s.id);
-            if (st === 'present') stats.present++;
-            else if (st === 'absent') stats.absent++;
-            else if (st === 'late') stats.late++;
-            else if (st === 'excused') stats.excused++;
-        });
+        var stats = newAttStats();
+        (cls.students || []).forEach(function(s) { addAttStat(stats, getStatus(cls, date, s.id)); });
         updateAttStatsDisplay(stats);
     }
 
@@ -2890,13 +3317,10 @@
     });
 
     function shiftDate(days) {
-        if (!attCurrentDate) return;
         try {
-            var d = new Date();
-            d.setDate(d.getDate() + days);
-            var jal = new Intl.DateTimeFormat('fa-IR-u-nu-latn', {
-                year: 'numeric', month: '2-digit', day: '2-digit'
-            }).format(d).replace(/\//g, '/');
+            var base = jalaliStrToDate(attCurrentDate) || new Date();
+            base.setDate(base.getDate() + days);
+            var jal = dateToJalaliStr(base);
             if (attDateInput) attDateInput.value = jal;
             attCurrentDate = jal;
             renderAttendance();
@@ -2942,7 +3366,7 @@
         var studentStats = {};
 
         (cls.students || []).forEach(function(s) {
-            studentStats[s.id] = { present: 0, absent: 0, late: 0, excused: 0 };
+            studentStats[s.id] = newAttStats();
         });
 
         Object.keys(attendanceData).forEach(function(key) {
@@ -2958,7 +3382,7 @@
             Object.keys(dayData).forEach(function(sid) {
                 if (!studentStats[sid]) return;
                 var st = dayData[sid];
-                if (studentStats[sid][st] !== undefined) studentStats[sid][st]++;
+                addAttStat(studentStats[sid], st);
             });
         });
 
@@ -2970,7 +3394,7 @@
             '<div class="modal" style="max-width:700px;">' +
                 '<h2 class="modal-title">📊 گزارش ماهانه - کلاس ' + escapeHtml(cls.className) + '</h2>' +
                 '<div style="margin-bottom:12px;font-size:13px;color:var(--text-muted);">' +
-                    'ماه: ' + monthPrefix + ' &nbsp; | &nbsp; روزهای ثبت‌شده: ' + days.length +
+                    'ماه: ' + monthName(monthPrefix.substring(5, 7)) + ' ' + toPersianNum(parseInt(monthPrefix.substring(0, 4), 10)) + ' &nbsp; | &nbsp; روزهای ثبت‌شده: ' + days.length +
                 '</div>' +
                 (days.length > 0 ?
                     '<div style="margin-bottom:16px;">' +
@@ -2986,9 +3410,9 @@
                         '<thead><tr>' +
                             '<th>#</th><th>نام</th>' +
                             '<th style="color:#10b981;">حاضر</th>' +
-                            '<th style="color:#ef4444;">غایب</th>' +
+                            '<th style="color:#3b82f6;">غایب موجه</th>' +
+                            '<th style="color:#ef4444;">غایب غیرموجه</th>' +
                             '<th style="color:#f59e0b;">تأخیر</th>' +
-                            '<th style="color:#3b82f6;">مرخصی</th>' +
                         '</tr></thead><tbody>' +
                         (cls.students || []).map(function(s, i) {
                             var st = studentStats[s.id];
@@ -2996,9 +3420,9 @@
                                 '<td>' + toPersianNum(i + 1) + '</td>' +
                                 '<td>' + escapeHtml((s.family || '') + ' ' + (s.name || '')) + '</td>' +
                                 '<td style="color:#10b981;font-weight:bold;">' + toPersianNum(st.present) + '</td>' +
-                                '<td style="color:#ef4444;font-weight:bold;">' + toPersianNum(st.absent) + '</td>' +
+                                '<td style="color:#3b82f6;font-weight:bold;">' + toPersianNum(st.absentJ) + '</td>' +
+                                '<td style="color:#ef4444;font-weight:bold;">' + toPersianNum(st.absentU) + '</td>' +
                                 '<td style="color:#f59e0b;font-weight:bold;">' + toPersianNum(st.late) + '</td>' +
-                                '<td style="color:#3b82f6;font-weight:bold;">' + toPersianNum(st.excused) + '</td>' +
                             '</tr>';
                         }).join('') +
                         '</tbody></table></div>'
@@ -3060,6 +3484,17 @@
 
     function getGradeKey(className, subject, date) {
         return className + '|' + subject + '|' + date;
+    }
+
+    // توضیح اختیاریِ هر ثبت نمره (مثلاً «ارزشیابی مهر ماه»)
+    var GRADENOTES_KEY = yk('cm_gradenotes_v1');
+    var gradeNotes = {};
+    function loadGradeNotes() {
+        try { var raw = localStorage.getItem(GRADENOTES_KEY); if (raw) gradeNotes = JSON.parse(raw) || {}; }
+        catch(e) { gradeNotes = {}; }
+    }
+    function saveGradeNotes() {
+        try { localStorage.setItem(GRADENOTES_KEY, JSON.stringify(gradeNotes)); } catch(e) {}
     }
 
     function refreshGradeClassDropdown() {
@@ -3193,6 +3628,9 @@
 
         var html = '<div class="grade-context">📚 ' + escapeHtml(currentSubject) + ' &nbsp;•&nbsp; 📅 ' + escapeHtml(describeJalaliDate(date)) + '</div>';
 
+        html += '<div class="grade-note"><input type="text" class="form-input" id="gradeNoteInput" maxlength="80" ' +
+                'placeholder="توضیح این ثبت (اختیاری) — مثلاً: ارزشیابی مهر ماه" value="' + escapeHtml(gradeNotes[key] || '') + '"></div>';
+
         html += '<div class="card" style="padding:0;">';
         students.forEach(function(s, i) {
             var level = dayData[s.id];
@@ -3212,6 +3650,15 @@
         });
         html += '</div>';
         container.innerHTML = html;
+
+        var noteInput = document.getElementById('gradeNoteInput');
+        if (noteInput) {
+            noteInput.addEventListener('input', function() {
+                var v = this.value.trim();
+                if (v) gradeNotes[key] = v; else delete gradeNotes[key];
+                saveGradeNotes();
+            });
+        }
 
         container.querySelectorAll('.desc-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
@@ -3364,7 +3811,9 @@
         if (!gradesData[key]) return;
         if (!confirm('پاک کردن همهٔ نمرات «' + currentSubject + '» در تاریخ ' + currentGradeDate + '؟')) return;
         delete gradesData[key];
+        delete gradeNotes[key];
         saveGrades();
+        saveGradeNotes();
         renderGrades();
     });
 
@@ -3394,7 +3843,8 @@
         html += '</style></head><body>';
         html += '<div class="h">نمرات توصیفی کلاس ' + escapeHtml(cls.className) + '</div>';
         html += yearLine();
-        html += '<div class="sub">درس: ' + escapeHtml(subject) + ' &nbsp; | &nbsp; تاریخ: ' + escapeHtml(date) + ' &nbsp; | &nbsp; تعداد: ' + students.length + '</div>';
+        html += '<div class="sub">درس: ' + escapeHtml(subject) + ' &nbsp; | &nbsp; تاریخ: ' + escapeHtml(describeJalaliDate(date)) + ' &nbsp; | &nbsp; تعداد: ' + students.length + '</div>';
+        if (gradeNotes[key]) html += '<div class="sub" style="font-weight:bold;">' + escapeHtml(gradeNotes[key]) + '</div>';
         html += '<table><colgroup><col style="width:8%;"><col style="width:20%;"><col style="width:52%;"><col style="width:20%;"></colgroup>';
         html += '<thead><tr><th>ردیف</th><th>کد ملی</th><th>نام و نام خانوادگی</th><th>ارزیابی</th></tr></thead><tbody>';
         students.forEach(function(s, i) {
@@ -3545,8 +3995,8 @@
         html += '<th style="width:90px;">کد ملی</th>';
         html += '<th style="width:150px;">نام و نام خانوادگی</th>';
         dates.forEach(function(d) {
-            var parts = d.split('/');
-            html += '<th style="min-width:62px;">' + fmtDayMonth(d) + '</th>';
+            var nt = gradeNotes[getGradeKey(cls.className, subject, d)];
+            html += '<th style="min-width:62px;">' + fmtDayMonth(d) + (nt ? '<div style="font-weight:normal;font-size:' + Math.max(7, fontSize - 2) + 'pt;">' + escapeHtml(nt) + '</div>' : '') + '</th>';
         });
         html += '</tr></thead><tbody>';
 
@@ -3713,6 +4163,29 @@
         'عدم توجه به درس',
         'شلوغ کردن کلاس'
     ];
+
+    // دلایلی که کاربر خودش نوشته است (مشترک بین همهٔ سال‌ها)
+    var CUSTOM_REASONS_KEY = 'cm_custom_reasons_v1';
+    var customReasons = { positive: [], negative: [] };
+    function loadCustomReasons() {
+        try {
+            var raw = localStorage.getItem(CUSTOM_REASONS_KEY);
+            if (raw) {
+                var c = JSON.parse(raw);
+                customReasons = { positive: c.positive || [], negative: c.negative || [] };
+            }
+        } catch(e) {}
+    }
+    function saveCustomReasons() {
+        try { localStorage.setItem(CUSTOM_REASONS_KEY, JSON.stringify(customReasons)); } catch(e) {}
+    }
+    function rememberCustomReason(type, reason) {
+        var presets = type === 'positive' ? POSITIVE_REASONS : NEGATIVE_REASONS;
+        var list = customReasons[type];
+        if (presets.indexOf(reason) >= 0 || list.indexOf(reason) >= 0) return;
+        list.push(reason);
+        saveCustomReasons();
+    }
 
     function loadBehaviors() {
         try {
@@ -3932,16 +4405,33 @@
     function renderQuickReasons() {
         var el = document.getElementById('quickReasons');
         if (!el) return;
-        var list = behaviorFormType === 'positive' ? POSITIVE_REASONS : NEGATIVE_REASONS;
+        var presets = behaviorFormType === 'positive' ? POSITIVE_REASONS : NEGATIVE_REASONS;
+        var custom = customReasons[behaviorFormType] || [];
         var h = '';
-        list.forEach(function(r) {
+        presets.forEach(function(r) {
             h += '<span class="quick-reason" data-reason="' + escapeHtml(r) + '">' + escapeHtml(r) + '</span>';
         });
+        if (custom.length) {
+            h += '<div class="quick-reasons-label">دلایل ثبت‌شدهٔ شما:</div>';
+            custom.forEach(function(r, i) {
+                h += '<span class="quick-reason custom" data-reason="' + escapeHtml(r) + '">' + escapeHtml(r) +
+                     '<span class="qr-x" data-del="' + i + '" title="حذف از فهرست">✕</span></span>';
+            });
+        }
         el.innerHTML = h;
 
         el.querySelectorAll('.quick-reason').forEach(function(chip) {
             chip.addEventListener('click', function() {
                 document.getElementById('behaviorReason').value = chip.getAttribute('data-reason');
+            });
+        });
+        el.querySelectorAll('.qr-x').forEach(function(x) {
+            x.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var i = parseInt(x.getAttribute('data-del'), 10);
+                customReasons[behaviorFormType].splice(i, 1);
+                saveCustomReasons();
+                renderQuickReasons();
             });
         });
     }
@@ -3970,6 +4460,8 @@
         if (!studentId) { alert('❌ دانش‌آموز را انتخاب کنید.'); return; }
         if (!date) { alert('❌ تاریخ را وارد کنید.'); return; }
         if (!reason) { alert('❌ دلیل را وارد کنید.'); return; }
+
+        rememberCustomReason(behaviorFormType, reason);
 
         if (!behaviorsData[cls.className]) behaviorsData[cls.className] = [];
         behaviorsData[cls.className].push({
@@ -4349,9 +4841,9 @@
             if (s.codemelli) html += '<div class="att-code">' + escapeHtml(s.codemelli) + '</div>';
             html += '</div>';
             html += '<div class="hw-status-actions">';
-            ['done', 'notdone', 'partial'].forEach(function(key) {
+            ['done', 'partial', 'notdone'].forEach(function(key) {
                 var sel = (st === key) ? ' selected' : '';
-                html += '<button class="hw-status-btn' + sel + '" data-status="' + key + '" title="' + HW_STATUS[key].label + '">' + HW_STATUS[key].icon + '</button>';
+                html += '<button class="hw-status-btn' + sel + '" data-status="' + key + '">' + HW_STATUS[key].label + '</button>';
             });
             html += '</div>';
             html += '</div>';
@@ -4682,7 +5174,7 @@
         return h;
     }
 
-    // ===== جدول رفتار: تاریخ، نوع رفتار (مثبت/منفی) و توضیح =====
+    // ===== جدول رفتار: تاریخ | رفتار مثبت | رفتار منفی (توضیح هر رفتار در ستون خودش) =====
     function cardBehaviorTable(stats, screen) {
         var items = stats.behavior.items || [];
         if (items.length === 0) {
@@ -4690,18 +5182,19 @@
                 ? '<div class="report-empty">رفتاری در این بازه ثبت نشده</div>'
                 : '<div style="text-align:center;padding:10px;color:#999;">رفتاری ثبت نشده</div>';
         }
-        var h = screen ? '<table class="report-mini-table">' : '<table class="mx">';
-        h += '<thead><tr><th>تاریخ</th><th>نوع رفتار</th><th>توضیح</th></tr></thead><tbody>';
+        var h = screen ? '<div style="overflow-x:auto;"><table class="report-mini-table">' : '<table class="mx">';
+        h += '<thead><tr><th style="width:15%;">تاریخ</th><th style="color:#10b981;">رفتار مثبت</th><th style="color:#ef4444;">رفتار منفی</th></tr></thead><tbody>';
         items.forEach(function(it) {
             var pos = it.type === 'positive';
-            var col = pos ? '#10b981' : '#ef4444';
+            var txt = escapeHtml(it.reason || (pos ? 'رفتار مثبت' : 'رفتار منفی'));
             h += '<tr>';
             h += '<td style="white-space:nowrap;">' + fmtDayMonth(it.date) + '</td>';
-            h += '<td style="color:' + col + ';font-weight:bold;white-space:nowrap;">' + (pos ? 'مثبت' : 'منفی') + '</td>';
-            h += '<td style="text-align:right;">' + escapeHtml(it.reason || '') + '</td>';
+            h += '<td style="text-align:right;color:#059669;">' + (pos ? txt : '') + '</td>';
+            h += '<td style="text-align:right;color:#dc2626;">' + (pos ? '' : txt) + '</td>';
             h += '</tr>';
         });
         h += '</tbody></table>';
+        if (screen) h += '</div>';
         return h;
     }
 
@@ -4713,7 +5206,7 @@
             gradesTotal: 0,
             gradesCount: 0,
             // حضور
-            attendance: { present: 0, absent: 0, late: 0, excused: 0 },
+            attendance: newAttStats(),
             // رفتار
             behavior: { positive: 0, negative: 0, count: 0, items: [] },
             // تکالیف
@@ -4760,7 +5253,7 @@
 
             var st = attendanceData[key][student.id];
             if (!st) return;
-            if (stats.attendance[st] !== undefined) stats.attendance[st]++;
+            addAttStat(stats.attendance, st);
         });
 
         // ===== رفتار =====
@@ -4910,15 +5403,15 @@
         // بخش حضور
         html += '<div class="report-section">';
         html += '<div class="report-section-title">✅ حضور و غیاب</div>';
-        var attTotal = stats.attendance.present + stats.attendance.absent + stats.attendance.late + stats.attendance.excused;
+        var attTotal = stats.attendance.present + stats.attendance.absent + stats.attendance.late;
         if (attTotal === 0) {
             html += '<div class="report-empty">حضوری در این بازه ثبت نشده</div>';
         } else {
             html += '<div class="compare-grid">';
             html += '<div class="compare-card"><div class="compare-card-title">✅ حاضر</div><div class="compare-card-value" style="color:#10b981;">' + toPersianNum(stats.attendance.present) + '</div></div>';
-            html += '<div class="compare-card"><div class="compare-card-title">❌ غایب</div><div class="compare-card-value" style="color:#ef4444;">' + toPersianNum(stats.attendance.absent) + '</div></div>';
+            html += '<div class="compare-card"><div class="compare-card-title">📄 غایب موجه</div><div class="compare-card-value" style="color:#3b82f6;">' + toPersianNum(stats.attendance.absentJ) + '</div></div>';
+            html += '<div class="compare-card"><div class="compare-card-title">❌ غایب غیرموجه</div><div class="compare-card-value" style="color:#ef4444;">' + toPersianNum(stats.attendance.absentU) + '</div></div>';
             html += '<div class="compare-card"><div class="compare-card-title">⏰ تأخیر</div><div class="compare-card-value" style="color:#f59e0b;">' + toPersianNum(stats.attendance.late) + '</div></div>';
-            html += '<div class="compare-card"><div class="compare-card-title">🏥 مرخصی</div><div class="compare-card-value" style="color:#3b82f6;">' + toPersianNum(stats.attendance.excused) + '</div></div>';
             html += '</div>';
         }
         html += '</div>';
@@ -4975,7 +5468,7 @@
 
         var totals = {
             gradesLevel: { 1: 0, 2: 0, 3: 0, 4: 0 },
-            att: { present: 0, absent: 0, late: 0, excused: 0 },
+            att: newAttStats(),
             behavior: { positive: 0, negative: 0 },
             homework: { done: 0, notdone: 0, partial: 0, total: 0 }
         };
@@ -4990,8 +5483,9 @@
             });
             totals.att.present += st.attendance.present;
             totals.att.absent += st.attendance.absent;
+            totals.att.absentJ += st.attendance.absentJ;
+            totals.att.absentU += st.attendance.absentU;
             totals.att.late += st.attendance.late;
-            totals.att.excused += st.attendance.excused;
             totals.behavior.positive += st.behavior.positive;
             totals.behavior.negative += st.behavior.negative;
             totals.homework.done += st.homework.done;
@@ -5023,9 +5517,9 @@
         html += '<div class="report-section-title">✅ حضور و غیاب</div>';
         html += '<div class="compare-grid">';
         html += '<div class="compare-card"><div class="compare-card-title">✅ حاضر</div><div class="compare-card-value" style="color:#10b981;">' + toPersianNum(totals.att.present) + '</div></div>';
-        html += '<div class="compare-card"><div class="compare-card-title">❌ غایب</div><div class="compare-card-value" style="color:#ef4444;">' + toPersianNum(totals.att.absent) + '</div></div>';
+        html += '<div class="compare-card"><div class="compare-card-title">📄 غایب موجه</div><div class="compare-card-value" style="color:#3b82f6;">' + toPersianNum(totals.att.absentJ) + '</div></div>';
+        html += '<div class="compare-card"><div class="compare-card-title">❌ غایب غیرموجه</div><div class="compare-card-value" style="color:#ef4444;">' + toPersianNum(totals.att.absentU) + '</div></div>';
         html += '<div class="compare-card"><div class="compare-card-title">⏰ تأخیر</div><div class="compare-card-value" style="color:#f59e0b;">' + toPersianNum(totals.att.late) + '</div></div>';
-        html += '<div class="compare-card"><div class="compare-card-title">🏥 مرخصی</div><div class="compare-card-value" style="color:#3b82f6;">' + toPersianNum(totals.att.excused) + '</div></div>';
         html += '</div>';
         html += '</div>';
 
@@ -5215,6 +5709,7 @@
         c += '.h { text-align: center; font-weight: bold; font-size: 18pt; padding: 6px 0 10px 0; border-bottom: 2px solid #000; margin-bottom: 12px; }';
         c += '.info-block { background: #f5f5f5; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 12pt; }';
         c += '.info-block div { margin-bottom: 4px; }';
+        c += '.il { display: flex; gap: 28px; flex-wrap: nowrap; }';
         c += '.section { margin-bottom: 12px; }';
         c += '.section-title { background: #e8e8e8; padding: 6px 10px; border-radius: 5px; font-weight: bold; font-size: 13pt; margin-bottom: 6px; border-right: 4px solid #2563eb; }';
         c += 'table { border-collapse: collapse; width: 100%; font-size: 11pt; }';
@@ -5234,11 +5729,11 @@
         html += yearLine();
 
         html += '<div class="info-block">';
-        html += '<div><b>نام و نام خانوادگی:</b> ' + escapeHtml((student.family || '') + ' ' + (student.name || '')) + '</div>';
-        if (student.father) html += '<div><b>نام پدر:</b> ' + escapeHtml(student.father) + '</div>';
-        if (student.codemelli) html += '<div><b>کد ملی:</b> ' + escapeHtml(student.codemelli) + '</div>';
-        html += '<div><b>کلاس:</b> ' + escapeHtml(cls.className) + '</div>';
-        html += '<div><b>بازهٔ گزارش:</b> ' + monthRangeText(reportFilterFrom, reportFilterTo) + '</div>';
+        html += '<div class="il"><span><b>نام و نام خانوادگی:</b> ' + escapeHtml((student.family || '') + ' ' + (student.name || '')) + '</span>';
+        html += '<span><b>نام پدر:</b> ' + escapeHtml(student.father || '—') + '</span>';
+        html += '<span><b>کد ملی:</b> ' + escapeHtml(student.codemelli || '—') + '</span></div>';
+        html += '<div class="il"><span><b>کلاس:</b> ' + escapeHtml(cls.className) + '</span>';
+        html += '<span><b>بازهٔ گزارش:</b> ' + monthRangeText(reportFilterFrom, reportFilterTo) + '</span></div>';
         html += '</div>';
 
         // نمرات
@@ -5250,12 +5745,12 @@
         // حضور
         html += '<div class="section">';
         html += '<div class="section-title">✅ حضور و غیاب</div>';
-        html += '<table><thead><tr><th>حاضر</th><th>غایب</th><th>تأخیر</th><th>مرخصی</th></tr></thead><tbody>';
+        html += '<table><thead><tr><th>حاضر</th><th>غایب موجه</th><th>غایب غیرموجه</th><th>تأخیر</th></tr></thead><tbody>';
         html += '<tr>';
         html += '<td style="color:#10b981;font-weight:bold;">' + stats.attendance.present + '</td>';
-        html += '<td style="color:#ef4444;font-weight:bold;">' + stats.attendance.absent + '</td>';
+        html += '<td style="color:#3b82f6;font-weight:bold;">' + stats.attendance.absentJ + '</td>';
+        html += '<td style="color:#ef4444;font-weight:bold;">' + stats.attendance.absentU + '</td>';
         html += '<td style="color:#f59e0b;font-weight:bold;">' + stats.attendance.late + '</td>';
-        html += '<td style="color:#3b82f6;font-weight:bold;">' + stats.attendance.excused + '</td>';
         html += '</tr></tbody></table>';
         html += '</div>';
 
@@ -5500,6 +5995,8 @@
             behaviorsData: behaviorsData,
             homeworkData: homeworkData,
             subjectsList: subjectsList,
+            gradeNotes: gradeNotes,
+            customReasons: customReasons,
             appSettings: appSettings
         };
 
@@ -5556,6 +6053,7 @@
 
                 if (parsed.attendanceData) {
                     attendanceData = parsed.attendanceData;
+                    migrateAttendance();
                     localStorage.setItem(ATT_STORAGE_KEY, JSON.stringify(attendanceData));
                 }
 
@@ -5580,6 +6078,14 @@
                     localStorage.setItem(SUBJECTS_STORAGE_KEY, JSON.stringify(subjectsList));
                 }
 
+                if (parsed.gradeNotes) {
+                    gradeNotes = parsed.gradeNotes;
+                    saveGradeNotes();
+                }
+                if (parsed.customReasons) {
+                    customReasons = { positive: parsed.customReasons.positive || [], negative: parsed.customReasons.negative || [] };
+                    saveCustomReasons();
+                }
                 if (parsed.appSettings) {
                     appSettings = Object.assign(appSettings, parsed.appSettings);
                     saveSettings();
@@ -5606,7 +6112,9 @@
     document.getElementById('btnClearGrades').addEventListener('click', function() {
         if (!confirm('⚠️ همهٔ نمرات پاک شوند؟')) return;
         gradesData = {};
+        gradeNotes = {};
         localStorage.removeItem(GRADES_STORAGE_KEY);
+        localStorage.removeItem(GRADENOTES_KEY);
         renderSettings();
         alert('✅ نمرات پاک شد.');
     });
@@ -5799,6 +6307,8 @@
     }
 
     renderYearSelectors();
+    loadCustomReasons();
+    loadGradeNotes();
     loadSubjects();
     loadGrades();
     loadBehaviors();
