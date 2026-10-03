@@ -8,6 +8,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2563eb">
+<meta name="cm-app" content="class-manager">
+<script>
+/* قفل ورود: پیش از رسم صفحه بررسی می‌شود تا محتوای برنامه برای لحظه‌ای هم دیده نشود */
+(function(){
+    window.__CM_USER = null; window.__CM_LOCKED = true;
+    try {
+        var a = JSON.parse(localStorage.getItem('cmauth_v1') || 'null');
+        var c = sessionStorage.getItem('cmauth_sess') || localStorage.getItem('cmauth_remember');
+        if (a && a.users && c && a.users.some(function(u){ return u.code === c; })) { window.__CM_USER = c; window.__CM_LOCKED = false; }
+    } catch(e) {}
+    if (window.__CM_LOCKED) document.documentElement.classList.add('cm-locked');
+})();
+</script>
+
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="مدیریت کلاسی">
@@ -622,7 +636,7 @@
     }
     .hw-card-header {
         display: flex; justify-content: space-between;
-        align-items: flex-start; gap: 10px;
+        align-items: center; gap: 10px;
         margin-bottom: 8px;
     }
     .hw-card-title {
@@ -659,13 +673,20 @@
         color: #f59e0b; font-weight: bold;
     }
     .hw-card-delete {
-        position: absolute; top: 8px; left: 8px;
-        background: none; border: none;
-        cursor: pointer; font-size: 14px;
-        opacity: 0.3; transition: opacity 0.15s;
-        padding: 4px;
+        flex: 0 0 auto; width: 30px; height: 30px;
+        margin-inline-start: 14px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #fee2e2; color: #dc2626;
+        border: 1.5px solid #fca5a5; border-radius: 50%;
+        font-size: 17px; font-weight: 900; line-height: 1;
+        font-family: Arial, sans-serif;
+        cursor: pointer; padding: 0;
+        transition: background .15s, color .15s, transform .15s;
     }
-    .hw-card-delete:hover { opacity: 1; }
+    .hw-card-delete:hover { background: #dc2626; color: #fff; border-color: #dc2626; transform: scale(1.08); }
+    .hw-card-delete:active { transform: scale(.94); }
+    body.dark .hw-card-delete { background: rgba(220,38,38,.18); color: #f87171; border-color: rgba(248,113,113,.5); }
+    body.dark .hw-card-delete:hover { background: #dc2626; color: #fff; }
 
     /* صفحهٔ جزئیات تکلیف */
     .hw-detail-header {
@@ -964,9 +985,226 @@
         border-bottom-color: #ef4444;
     }
 
+    /* ═══════════════════════════════════════════════════
+       🔐 صفحهٔ ورود و ایجاد حساب
+       ═══════════════════════════════════════════════════ */
+    #authRoot { display: none; }
+    html.cm-locked body > *:not(#authRoot):not(script) { display: none !important; }
+    html.cm-locked body { background: #1e1b4b; overflow: auto; }
+    html.cm-locked #authRoot { display: flex; }
+
+    #authRoot {
+        --a-ink: #1e1b4b; --a-text: #1f2547; --a-muted: #6b7194; --a-card: #ffffff; --a-line: #e3e5f5;
+        --a-field: #f5f6ff; --a-brand: #5b5bf0; --a-brand2: #8b5cf6; --a-ok: #10b981; --a-bad: #ef4444;
+        position: fixed; inset: 0; z-index: 99999; overflow: auto;
+        align-items: stretch; justify-content: center;
+        background:
+            radial-gradient(1200px 700px at 85% -10%, #7c3aed 0%, transparent 60%),
+            radial-gradient(900px 600px at -10% 110%, #06b6d4 0%, transparent 55%),
+            linear-gradient(135deg, #1e1b4b 0%, #312e81 45%, #4f46e5 100%);
+        color: var(--a-text);
+    }
+    #authRoot.auth-dark { --a-text: #e8eaff; --a-muted: #a2a8d6; --a-card: #1b1f3f; --a-line: #2f3568; --a-field: #12163a; }
+    .auth-blob { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .5; pointer-events: none; animation: authFloat 14s ease-in-out infinite; }
+    .auth-blob.b1 { width: 340px; height: 340px; background: #22d3ee; top: -90px; left: -80px; }
+    .auth-blob.b2 { width: 420px; height: 420px; background: #a855f7; bottom: -140px; right: -100px; animation-delay: -5s; }
+    .auth-blob.b3 { width: 220px; height: 220px; background: #f472b6; top: 45%; left: 38%; opacity: .28; animation-delay: -9s; }
+    @keyframes authFloat { 0%,100% { transform: translate(0,0) scale(1);} 50% { transform: translate(30px,-26px) scale(1.08);} }
+    .auth-grid { position: absolute; inset: 0; opacity: .08; pointer-events: none;
+        background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 38px 38px;
+        -webkit-mask-image: radial-gradient(circle at 30% 40%, #000, transparent 70%); mask-image: radial-gradient(circle at 30% 40%, #000, transparent 70%); }
+
+    .auth-shell { position: relative; z-index: 1; width: 100%; max-width: 1080px; margin: auto; padding: 24px 18px;
+        display: grid; grid-template-columns: 1.05fr 1fr; gap: 36px; align-items: center; }
+    .auth-hero { color: #fff; }
+    .auth-logo { display: inline-flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .auth-logo img { width: 56px; height: 56px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+    .auth-logo b { font-size: 26px; font-weight: 800; letter-spacing: -.3px; }
+    .auth-hero h1 { font-size: 34px; line-height: 1.5; font-weight: 800; margin-bottom: 10px; }
+    .auth-hero h1 span { background: linear-gradient(90deg, #67e8f9, #f0abfc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .auth-hero p { color: rgba(255,255,255,.78); font-size: 15px; line-height: 2; max-width: 460px; }
+    .auth-illus { margin-top: 14px; width: 100%; max-width: 470px; }
+    .auth-illus svg { width: 100%; height: auto; display: block; overflow: visible; }
+    .auth-illus .fl1 { animation: authBob 6s ease-in-out infinite; }
+    .auth-illus .fl2 { animation: authBob 7s ease-in-out -2s infinite; }
+    .auth-illus .fl3 { animation: authBob 5s ease-in-out -3s infinite; }
+    .auth-illus .tw { animation: authTw 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    @keyframes authBob { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-9px);} }
+    @keyframes authTw { 0%,100% { transform: scale(1); opacity: 1;} 50% { transform: scale(.6); opacity: .5;} }
+    .auth-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .auth-chips span { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        padding: 6px 12px; border-radius: 999px; font-size: 12.5px; color: #fff; }
+
+    .auth-card { background: var(--a-card); border-radius: 26px; padding: 26px 24px 22px; box-shadow: 0 30px 80px rgba(10,8,50,.55), 0 0 0 1px rgba(255,255,255,.08); position: relative; }
+    .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--a-field); border-radius: 14px; padding: 4px; margin-bottom: 20px; position: relative; }
+    .auth-tab { border: 0; background: none; font: inherit; font-weight: 700; font-size: 14px; padding: 10px 6px; border-radius: 11px; cursor: pointer; color: var(--a-muted); position: relative; z-index: 1; transition: color .2s; }
+    .auth-tab.on { color: #fff; }
+    .auth-tabs i { position: absolute; top: 4px; bottom: 4px; width: calc(50% - 4px); border-radius: 11px; background: linear-gradient(135deg, var(--a-brand), var(--a-brand2)); box-shadow: 0 6px 16px rgba(91,91,240,.45); transition: inset-inline-start .25s ease; inset-inline-start: 4px; }
+    .auth-tabs.signup i { inset-inline-start: calc(50%); }
+    .auth-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; color: var(--a-text); }
+    .auth-sub { font-size: 13px; color: var(--a-muted); margin-bottom: 16px; line-height: 1.8; }
+    .auth-f { margin-bottom: 13px; }
+    .auth-f label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; color: var(--a-text); }
+    .auth-in { position: relative; }
+    .auth-in input { width: 100%; font: inherit; font-size: 15px; color: var(--a-text); background: var(--a-field); border: 1.5px solid var(--a-line); border-radius: 13px; padding: 12px 14px 12px 44px; outline: none; transition: border-color .2s, box-shadow .2s; }
+    .auth-in input.ltr { direction: ltr; text-align: left; letter-spacing: .5px; }
+    .auth-in input:focus { border-color: var(--a-brand); box-shadow: 0 0 0 4px rgba(91,91,240,.18); }
+    .auth-in input.bad { border-color: var(--a-bad); }
+    .auth-in .ico { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 17px; opacity: .7; background: none; border: 0; cursor: pointer; padding: 4px; line-height: 1; }
+    .auth-in .ico.static { pointer-events: none; }
+    .auth-hint { font-size: 11.5px; color: var(--a-muted); margin-top: 5px; min-height: 16px; }
+    .auth-hint.bad { color: var(--a-bad); } .auth-hint.ok { color: var(--a-ok); }
+    .auth-meter { display: flex; gap: 4px; margin-top: 7px; }
+    .auth-meter b { flex: 1; height: 5px; border-radius: 3px; background: var(--a-line); transition: background .2s; }
+    .auth-row { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 16px; font-size: 13px; }
+    .auth-check { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; color: var(--a-text); user-select: none; }
+    .auth-check input { width: 17px; height: 17px; accent-color: var(--a-brand); }
+    .auth-link { background: none; border: 0; font: inherit; font-size: 13px; color: var(--a-brand); cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
+    .auth-go { width: 100%; font: inherit; font-weight: 800; font-size: 16px; color: #fff; border: 0; border-radius: 14px; padding: 14px; cursor: pointer;
+        background: linear-gradient(135deg, var(--a-brand), var(--a-brand2)); box-shadow: 0 12px 26px rgba(91,91,240,.45); transition: transform .15s, box-shadow .15s, opacity .2s; }
+    .auth-go:hover { transform: translateY(-2px); box-shadow: 0 16px 30px rgba(91,91,240,.55); }
+    .auth-go:active { transform: translateY(0); }
+    .auth-go:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+    .auth-err { background: rgba(239,68,68,.12); color: var(--a-bad); border: 1px solid rgba(239,68,68,.35); border-radius: 12px; padding: 10px 12px; font-size: 13px; margin-bottom: 12px; line-height: 1.8; display: none; }
+    .auth-err.show { display: block; }
+    .auth-note { font-size: 11.5px; color: var(--a-muted); text-align: center; margin-top: 14px; line-height: 1.9; }
+    .auth-pane { display: none; } .auth-pane.on { display: block; animation: authIn .25s ease; }
+    @keyframes authIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: none;} }
+    .auth-forgot { background: var(--a-field); border: 1px dashed var(--a-line); border-radius: 14px; padding: 14px; font-size: 13px; line-height: 2; color: var(--a-text); }
+    .auth-forgot .auth-go.danger { background: linear-gradient(135deg, #ef4444, #f97316); box-shadow: 0 10px 22px rgba(239,68,68,.4); font-size: 14px; padding: 11px; margin-top: 8px; }
+
+    @media (max-width: 860px) {
+        .auth-shell { grid-template-columns: 1fr; gap: 6px; padding: 14px 14px 26px; }
+        .auth-hero h1 { font-size: 24px; } .auth-hero p, .auth-chips { display: none; }
+        .auth-logo { margin-bottom: 6px; } .auth-logo img { width: 44px; height: 44px; }
+        .auth-illus { max-width: 250px; margin: 0 auto 4px; }
+        .auth-hero { text-align: center; } .auth-hero h1 { margin-bottom: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) { .auth-blob, .auth-illus .fl1, .auth-illus .fl2, .auth-illus .fl3, .auth-illus .tw { animation: none; } }
+
 </style>
 </head>
 <body>
+<!-- ═══ صفحهٔ ورود / ایجاد حساب ═══ -->
+<div id="authRoot" aria-live="polite">
+    <div class="auth-blob b1"></div><div class="auth-blob b2"></div><div class="auth-blob b3"></div><div class="auth-grid"></div>
+    <div class="auth-shell">
+        <section class="auth-hero">
+            <div class="auth-logo"><img src="icon-192.png" alt=""><b>مدیریت کلاسی</b></div>
+            <h1>کلاستو <span>مرتب و هوشمند</span> اداره کن</h1>
+            <p>حضور و غیاب، نمرات توصیفی، رفتار، تکالیف و کارنامه — همه‌جا همراهت، حتی بدون اینترنت.</p>
+            <div class="auth-illus" aria-hidden="true">
+                <svg viewBox="0 0 480 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="agBook" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e0e7ff"/></linearGradient>
+                        <linearGradient id="agPen" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fbbf24"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
+                        <linearGradient id="agBar" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#22d3ee"/></linearGradient>
+                        <filter id="agSh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#0b0830" flood-opacity=".35"/></filter>
+                    </defs>
+                    <ellipse cx="240" cy="318" rx="170" ry="16" fill="#0b0830" opacity=".28"/>
+                    <circle cx="240" cy="170" r="140" fill="#ffffff" opacity=".07"/>
+                    <circle cx="240" cy="170" r="104" fill="#ffffff" opacity=".07"/>
+                    <!-- open book -->
+                    <g filter="url(#agSh)">
+                        <path d="M240 112 C205 92 150 92 96 108 L96 262 C150 246 205 246 240 266 Z" fill="url(#agBook)"/>
+                        <path d="M240 112 C275 92 330 92 384 108 L384 262 C330 246 275 246 240 266 Z" fill="url(#agBook)"/>
+                        <path d="M240 112 L240 266" stroke="#c7d2fe" stroke-width="3"/>
+                    </g>
+                    <g stroke="#a5b4fc" stroke-width="5" stroke-linecap="round">
+                        <path d="M118 140 C150 132 190 134 220 146"/><path d="M118 164 C150 156 190 158 220 170"/><path d="M118 188 C150 180 190 182 220 194"/>
+                        <path d="M260 146 C290 134 330 132 362 140" /><path d="M260 170 C290 158 330 156 362 164"/>
+                    </g>
+                    <g>
+                        <circle cx="130" cy="214" r="9" fill="#10b981"/><path d="M126 214 l3 3 l6 -7" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <rect x="148" y="210" width="62" height="8" rx="4" fill="#c7d2fe"/>
+                        <circle cx="130" cy="238" r="9" fill="#10b981"/><path d="M126 238 l3 3 l6 -7" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <rect x="148" y="234" width="46" height="8" rx="4" fill="#c7d2fe"/>
+                    </g>
+                    <!-- chart card -->
+                    <g class="fl1" filter="url(#agSh)">
+                        <rect x="300" y="196" width="126" height="86" rx="16" fill="#ffffff"/>
+                        <rect x="318" y="244" width="14" height="24" rx="4" fill="url(#agBar)"/>
+                        <rect x="340" y="226" width="14" height="42" rx="4" fill="url(#agBar)"/>
+                        <rect x="362" y="236" width="14" height="32" rx="4" fill="url(#agBar)"/>
+                        <rect x="384" y="212" width="14" height="56" rx="4" fill="url(#agBar)"/>
+                    </g>
+                    <!-- badge -->
+                    <g class="fl2" filter="url(#agSh)">
+                        <rect x="52" y="52" width="132" height="52" rx="16" fill="#ffffff"/>
+                        <circle cx="82" cy="78" r="14" fill="#fde68a"/><path d="M82 70 l2.6 5.4 5.9 .8 -4.3 4.1 1 5.9 -5.2 -2.8 -5.2 2.8 1 -5.9 -4.3 -4.1 5.9 -.8z" fill="#f59e0b"/>
+                        <rect x="104" y="68" width="62" height="7" rx="3.5" fill="#c7d2fe"/><rect x="104" y="82" width="40" height="7" rx="3.5" fill="#e0e7ff"/>
+                    </g>
+                    <!-- pencil -->
+                    <g class="fl3" transform="translate(384 44) rotate(38)" filter="url(#agSh)">
+                        <rect x="0" y="0" width="22" height="116" rx="5" fill="url(#agPen)"/>
+                        <rect x="0" y="0" width="22" height="16" rx="5" fill="#f472b6"/>
+                        <path d="M0 116 L11 146 L22 116 Z" fill="#fde7c3"/><path d="M7 132 L11 146 L15 132 Z" fill="#334155"/>
+                    </g>
+                    <g fill="#fff"><path class="tw" d="M60 190 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z"/><path class="tw" style="animation-delay:-1.2s" d="M424 120 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z"/><circle class="tw" style="animation-delay:-2s" cx="262" cy="64" r="4"/></g>
+                </svg>
+            </div>
+            <div class="auth-chips"><span>✅ حضور و غیاب</span><span>📝 نمرات توصیفی</span><span>🎯 رفتار و تکالیف</span><span>🖨️ کارنامه</span></div>
+        </section>
+
+        <section class="auth-card">
+            <div class="auth-tabs" id="authTabs">
+                <i></i>
+                <button class="auth-tab on" data-tab="login" type="button">ورود</button>
+                <button class="auth-tab" data-tab="signup" type="button">ایجاد حساب</button>
+            </div>
+
+            <div id="authErr" class="auth-err" role="alert"></div>
+
+            <form class="auth-pane on" id="paneLogin" autocomplete="on" novalidate>
+                <div class="auth-title">خوش برگشتی 👋</div>
+                <div class="auth-sub">نام کاربری شما همان کد ملی‌تان است.</div>
+                <div class="auth-f"><label for="lgCode">نام کاربری (کد ملی)</label>
+                    <div class="auth-in"><input id="lgCode" class="ltr" inputmode="numeric" autocomplete="username" maxlength="10" placeholder="۱۰ رقم"><span class="ico static">🪪</span></div></div>
+                <div class="auth-f"><label for="lgPass">رمز عبور</label>
+                    <div class="auth-in"><input id="lgPass" type="password" class="ltr" autocomplete="current-password" placeholder="••••••"><button type="button" class="ico" data-eye="lgPass" aria-label="نمایش رمز">👁️</button></div></div>
+                <div class="auth-row">
+                    <label class="auth-check"><input type="checkbox" id="lgRemember" checked> مرا به خاطر بسپار</label>
+                    <button type="button" class="auth-link" id="lnkForgot">رمز را فراموش کرده‌ام</button>
+                </div>
+                <button class="auth-go" type="submit" id="btnLogin">ورود به برنامه</button>
+            </form>
+
+            <form class="auth-pane" id="paneSignup" autocomplete="on" novalidate>
+                <div class="auth-title">ساخت حساب جدید ✨</div>
+                <div class="auth-sub">در چند ثانیه حساب بسازید؛ داده‌های هر حساب جدا از بقیه نگه‌داری می‌شود.</div>
+                <div class="auth-f"><label for="suName">نام و نام خانوادگی (اختیاری)</label>
+                    <div class="auth-in"><input id="suName" autocomplete="name" placeholder="مثلاً: یوسف معصومی"><span class="ico static">👤</span></div></div>
+                <div class="auth-f"><label for="suCode">نام کاربری (کد ملی)</label>
+                    <div class="auth-in"><input id="suCode" class="ltr" inputmode="numeric" autocomplete="username" maxlength="10" placeholder="۱۰ رقم"><span class="ico static">🪪</span></div>
+                    <div class="auth-hint" id="suCodeHint"></div></div>
+                <div class="auth-f"><label for="suPass">رمز عبور (حداقل ۶ کاراکتر)</label>
+                    <div class="auth-in"><input id="suPass" type="password" class="ltr" autocomplete="new-password" placeholder="••••••"><button type="button" class="ico" data-eye="suPass" aria-label="نمایش رمز">👁️</button></div>
+                    <div class="auth-meter" id="suMeter"><b></b><b></b><b></b><b></b></div>
+                    <div class="auth-hint" id="suPassHint"></div></div>
+                <div class="auth-f"><label for="suPass2">تکرار رمز عبور</label>
+                    <div class="auth-in"><input id="suPass2" type="password" class="ltr" autocomplete="new-password" placeholder="••••••"><button type="button" class="ico" data-eye="suPass2" aria-label="نمایش رمز">👁️</button></div>
+                    <div class="auth-hint" id="suPass2Hint"></div></div>
+                <button class="auth-go" type="submit" id="btnSignup">ایجاد حساب و ورود</button>
+            </form>
+
+            <div class="auth-pane" id="paneForgot">
+                <div class="auth-title">فراموشی رمز عبور</div>
+                <div class="auth-forgot">
+                    این برنامه بدون سرور کار می‌کند و رمز شما فقط به‌صورت رمزنگاری‌شده روی همین دستگاه ذخیره می‌شود؛ بنابراین <b>امکان بازیابی رمز وجود ندارد</b>.<br>
+                    اگر از داده‌ها فایل پشتیبان گرفته‌اید، می‌توانید حساب را حذف و دوباره بسازید و پشتیبان را از «تنظیمات ← پشتیبان‌گیری» بازیابی کنید.
+                    <div class="auth-f" style="margin-top:10px;"><label for="fgCode">برای حذف حساب، کد ملی آن را بنویسید</label>
+                        <div class="auth-in"><input id="fgCode" class="ltr" inputmode="numeric" maxlength="10" placeholder="۱۰ رقم"><span class="ico static">🪪</span></div></div>
+                    <button type="button" class="auth-go danger" id="btnForgotDel">🗑️ حذف حساب و همهٔ داده‌های آن</button>
+                </div>
+                <div class="auth-row" style="margin-top:14px;justify-content:center;"><button type="button" class="auth-link" id="lnkBack">← بازگشت به ورود</button></div>
+            </div>
+
+            <div class="auth-note">🔒 قفل ورود فقط روی همین دستگاه است و داده‌ای به اینترنت ارسال نمی‌شود.</div>
+        </section>
+    </div>
+</div>
+
+
 
 <!-- ═══════════════════════════════════════════════════
      🎯 TOPBAR
@@ -983,6 +1221,7 @@
         <select class="year-select" id="topYearSelect" title="سال تحصیلی"></select>
         <button class="btn-icon" id="btnTheme" title="حالت شب">🌙</button>
         <button class="btn-icon" id="btnSettings" title="تنظیمات">⚙️</button>
+        <button class="btn-icon" id="topUserBtn" title="خروج از حساب">🚪</button>
     </div>
 </header>
 
@@ -1060,8 +1299,6 @@
 
             <div class="toolbar">
                 <button class="btn btn-primary" id="btnAddClass">➕ افزودن کلاس</button>
-                <button class="btn btn-success" id="btnImportJSON">📥 ورود از JSON</button>
-                <button class="btn btn-outline" id="btnExportJSON">📤 خروجی JSON</button>
             </div>
 
             <div id="classesContainer">
@@ -1069,7 +1306,7 @@
                     <div class="empty-state">
                         <div class="empty-state-icon">📚</div>
                         <div class="empty-state-text">هنوز کلاسی اضافه نشده</div>
-                        <div class="empty-state-hint">روی «افزودن کلاس» بزن یا فایل JSON سیدا را وارد کن</div>
+                        <div class="empty-state-hint">روی «افزودن کلاس» بزن و بعد لیست دانش‌آموزان را از PDF یا اکسل وارد کن</div>
                     </div>
                 </div>
             </div>
@@ -1088,13 +1325,14 @@
                 </select>
                 <button class="btn btn-primary btn-sm" id="btnAddStudent">➕ افزودن دانش‌آموز</button>
                 <button class="btn btn-success btn-sm" id="btnPrintClass">🖨️ چاپ / PDF لیست کلاس</button>
-                <button class="btn btn-outline btn-sm" id="btnExcelImport">📋 ورود لیست کلاس از اکسل</button>
+                <button class="btn btn-outline btn-sm" id="btnExcelImport">📋 ورود لیست از اکسل</button>
+                <button class="btn btn-outline btn-sm" id="btnPdfImport">📄 ورود لیست از PDF</button>
             </div>
 
             <div class="toolbar">
                 <div class="search-bar">
                     <span class="search-bar-icon">🔍</span>
-                    <input type="text" id="studentSearch" placeholder="جستجو در نام، کد ملی، تلفن...">
+                    <input type="text" id="studentSearch" placeholder="جستجو در نام، نام پدر، کد ملی...">
                     <button class="search-bar-clear" id="searchClear" title="پاک کردن">✕</button>
                 </div>
                 <select class="sort-select" id="studentSort">
@@ -1427,6 +1665,40 @@
                     <button class="btn btn-success btn-sm" id="btnNewYear">➕ ایجاد سال تحصیلی جدید</button>
                 </div>
 
+                <!-- کارت حساب کاربری -->
+                <div class="settings-card">
+                    <div class="settings-card-title">🔐 حساب کاربری</div>
+                    <p id="accUserLabel" style="font-size:13px;margin-bottom:12px;line-height:1.8;"></p>
+                    <details style="margin-bottom:10px;">
+                        <summary style="cursor:pointer;font-size:13px;font-weight:600;margin-bottom:8px;">🔑 تغییر رمز عبور</summary>
+                        <div class="form-group"><input type="password" class="form-input" id="accOldPw" placeholder="رمز فعلی" autocomplete="current-password" style="direction:ltr;"></div>
+                        <div class="form-group"><input type="password" class="form-input" id="accNewPw" placeholder="رمز جدید (حداقل ۶ کاراکتر)" autocomplete="new-password" style="direction:ltr;"></div>
+                        <div class="form-group"><input type="password" class="form-input" id="accNewPw2" placeholder="تکرار رمز جدید" autocomplete="new-password" style="direction:ltr;"></div>
+                        <button class="btn btn-primary btn-sm" id="btnAccChangePw">💾 تغییر رمز</button>
+                    </details>
+                    <button class="btn btn-outline" id="btnAccLogout" style="width:100%;">🚪 خروج از حساب</button>
+                </div>
+
+                <!-- کارت به‌روزرسانی -->
+                <div class="settings-card">
+                    <div class="settings-card-title">🔄 به‌روزرسانی برنامه</div>
+                    <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.8;">
+                        نسخهٔ فعلی: <b id="updCurrent"></b><br>
+                        نسخهٔ جدید از مخزن GitHub دریافت می‌شود. اطلاعات شما دست‌نخورده می‌ماند.
+                    </p>
+                    <div class="form-group">
+                        <label class="form-label">مخزن GitHub</label>
+                        <input type="text" class="form-input" id="updRepo" placeholder="username/repository" style="direction:ltr;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">شاخه</label>
+                        <input type="text" class="form-input" id="updBranch" placeholder="main" style="direction:ltr;">
+                    </div>
+                    <button class="btn btn-primary" id="btnUpdCheck" style="width:100%;margin-bottom:8px;">🔄 بررسی و دریافت به‌روزرسانی</button>
+                    <button class="btn btn-success" id="btnUpdInstall" style="width:100%;display:none;">⬇️ دریافت و نصب نسخهٔ جدید</button>
+                    <div id="updStatus" style="font-size:13px;margin-top:10px;line-height:1.8;"></div>
+                </div>
+
                 <!-- کارت ۱: اطلاعات معلم -->
                 <div class="settings-card">
                     <div class="settings-card-title">👤 اطلاعات معلم</div>
@@ -1545,7 +1817,7 @@
             </div>
 
             <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;padding:16px;border-top:1px dashed var(--border);">
-                📚 مدیریت کلاسی - نسخهٔ ۱.۰<br>
+                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۰.۰</span><br>
                 🎨 طراح: یوسف معصومی
             </div>
         </div>
@@ -1603,20 +1875,6 @@
                 <input type="text" class="form-input" id="inputStCode" placeholder="1234567890">
             </div>
         </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label class="form-label">تلفن پدر</label>
-                <input type="text" class="form-input" id="inputStFatherPhone" placeholder="09123456789">
-            </div>
-            <div class="form-group">
-                <label class="form-label">تلفن مادر</label>
-                <input type="text" class="form-input" id="inputStMotherPhone" placeholder="09123456788">
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="form-label">تلفن شاد</label>
-            <input type="text" class="form-input" id="inputStShadPhone" placeholder="09123456787">
-        </div>
         <div class="modal-actions">
             <button class="btn btn-outline" data-close-modal="modalStudent">انصراف</button>
             <button class="btn btn-primary" id="btnSaveStudent">💾 ذخیره</button>
@@ -1655,24 +1913,42 @@
     </div>
 </div>
 
-<!-- مودال Import JSON -->
-<div class="modal-overlay" id="modalImport">
-    <div class="modal">
-        <h2 class="modal-title">📥 ورود داده‌ها از JSON</h2>
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;line-height:1.8;">
-            می‌توانید محتوای JSON را در کادر زیر بچسبانید، یا فایل را انتخاب کنید.
+<!-- مودال ورود لیست از PDF -->
+<div class="modal-overlay" id="modalPdf">
+    <div class="modal" style="max-width:720px;">
+        <h2 class="modal-title">📄 ورود لیست کلاس از PDF</h2>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;line-height:1.9;">
+            فایل PDF لیست کلاسی (خروجی سیدا یا جدول مشابه با ستون‌های کد ملی / کد دانش‌آموزی، نام و نام خانوادگی و نام پدر) را انتخاب کنید. فایل فقط روی همین دستگاه خوانده می‌شود.
         </p>
         <div class="form-group">
-            <label class="form-label">فایل JSON</label>
-            <input type="file" id="importFileInput" accept=".json" class="form-input">
+            <label class="form-label">فایل PDF *</label>
+            <input type="file" id="pdfFileInput" accept=".pdf,application/pdf" class="form-input">
         </div>
-        <div class="form-group">
-            <label class="form-label">یا متن JSON</label>
-            <textarea class="form-textarea" id="importTextarea" placeholder='{"classes": [...]}'></textarea>
+        <div id="pdfStatus" style="font-size:13px;margin:6px 0;line-height:1.8;"></div>
+        <div id="pdfPreviewWrap" style="display:none;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;line-height:1.8;">
+                نام و نام خانوادگی در PDF یک‌جا نوشته شده و جدا کردن آن‌ها خودکار است؛ در نام‌های دوکلمه‌ای ممکن است اشتباه شود. پیش از ورود، موارد را بررسی و اصلاح کنید (دکمهٔ ⇄ جای نام و نام خانوادگی را عوض می‌کند).
+            </div>
+            <div class="table-wrap" style="max-height:340px;overflow:auto;">
+                <table class="data-table" id="pdfPreviewTable"></table>
+            </div>
+            <div class="form-row" style="margin-top:12px;">
+                <div class="form-group">
+                    <label class="form-label">کلاس مقصد *</label>
+                    <select class="form-select" id="pdfClassSelect"></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">روش ورود</label>
+                    <select class="form-select" id="pdfMode">
+                        <option value="add">اضافه شود (تکراری‌ها نادیده گرفته شوند)</option>
+                        <option value="replace">جایگزین لیست فعلی شود</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <div class="modal-actions">
-            <button class="btn btn-outline" data-close-modal="modalImport">انصراف</button>
-            <button class="btn btn-success" id="btnDoImport">📥 ورود داده‌ها</button>
+            <button class="btn btn-outline" data-close-modal="modalPdf">انصراف</button>
+            <button class="btn btn-success" id="btnDoPdfImport" disabled>📥 ورود دانش‌آموزان</button>
         </div>
     </div>
 </div>
@@ -1818,8 +2094,645 @@
 <!-- === MODALS-END: این خط را پاک نکن === -->
 
 <script>
+/* ===== احراز هویت محلی (قفل دستگاه) ===== */
+var CMAuth = (function(){
+    'use strict';
+    var real = window.localStorage, K = 'cmauth_v1', K_REM = 'cmauth_remember', K_SESS = 'cmauth_sess', K_FAIL = 'cmauth_fail';
+    var enc = new TextEncoder();
+
+    function toEn(s){ return String(s||'').replace(/[۰-۹]/g,function(c){return c.charCodeAt(0)-0x06F0;}).replace(/[٠-٩]/g,function(c){return c.charCodeAt(0)-0x0660;}); }
+    function validCode(c){
+        c = toEn(c).trim();
+        if(!/^\d{10}$/.test(c) || /^(\d)\1{9}$/.test(c)) return false;
+        var s=0,i; for(i=0;i<9;i++) s+=(+c[i])*(10-i);
+        var r=s%11, k=+c[9]; return r<2 ? k===r : k===11-r;
+    }
+    function db(){ try { var d=JSON.parse(real.getItem(K)||'null'); if(d&&d.users) return d; } catch(e){} return {users:[]}; }
+    function saveDb(d){ real.setItem(K, JSON.stringify(d)); }
+    function b64(u8){ var s=''; for(var i=0;i<u8.length;i++) s+=String.fromCharCode(u8[i]); return btoa(s); }
+    function unb64(s){ var b=atob(s), u=new Uint8Array(b.length); for(var i=0;i<b.length;i++) u[i]=b.charCodeAt(i); return u; }
+
+    /* SHA-256 خالص برای مرورگرهای بدون crypto.subtle (مثل http غیرایمن) */
+    var K256=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+    function sha256(m){
+        var l=m.length, nb=((l+9+63)>>6)<<6, b=new Uint8Array(nb); b.set(m); b[l]=0x80;
+        var dv=new DataView(b.buffer); dv.setUint32(nb-4, (l*8)>>>0); dv.setUint32(nb-8, Math.floor(l*8/4294967296));
+        var h=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19], w=new Array(64), o,i;
+        for(o=0;o<nb;o+=64){
+            for(i=0;i<16;i++) w[i]=dv.getUint32(o+i*4);
+            for(i=16;i<64;i++){ var s0=((w[i-15]>>>7)|(w[i-15]<<25))^((w[i-15]>>>18)|(w[i-15]<<14))^(w[i-15]>>>3), s1=((w[i-2]>>>17)|(w[i-2]<<15))^((w[i-2]>>>19)|(w[i-2]<<13))^(w[i-2]>>>10); w[i]=(w[i-16]+s0+w[i-7]+s1)|0; }
+            var a=h[0],bb=h[1],c=h[2],d=h[3],e=h[4],f=h[5],g=h[6],hh=h[7];
+            for(i=0;i<64;i++){
+                var S1=((e>>>6)|(e<<26))^((e>>>11)|(e<<21))^((e>>>25)|(e<<7)), ch=(e&f)^(~e&g), t1=(hh+S1+ch+K256[i]+w[i])|0;
+                var S0=((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10)), mj=(a&bb)^(a&c)^(bb&c), t2=(S0+mj)|0;
+                hh=g;g=f;f=e;e=(d+t1)|0;d=c;c=bb;bb=a;a=(t1+t2)|0;
+            }
+            h[0]=(h[0]+a)|0;h[1]=(h[1]+bb)|0;h[2]=(h[2]+c)|0;h[3]=(h[3]+d)|0;h[4]=(h[4]+e)|0;h[5]=(h[5]+f)|0;h[6]=(h[6]+g)|0;h[7]=(h[7]+hh)|0;
+        }
+        var out=new Uint8Array(32), ov=new DataView(out.buffer); for(i=0;i<8;i++) ov.setUint32(i*4,h[i]); return out;
+    }
+    function hasSubtle(){ return !!(window.crypto && crypto.subtle && crypto.subtle.importKey); }
+    async function derive(pw, salt, alg){
+        var pwb = enc.encode(pw);
+        if(alg==='pbkdf2'){
+            if(!hasSubtle()) throw new Error('این حساب با روش رمزنگاری پیشرفته ساخته شده و در این مرورگر/آدرس قابل ورود نیست (به https یا localhost نیاز دارد).');
+            var key = await crypto.subtle.importKey('raw', pwb, 'PBKDF2', false, ['deriveBits']);
+            var bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt:salt, iterations:150000, hash:'SHA-256'}, key, 256);
+            return b64(new Uint8Array(bits));
+        }
+        var cur = new Uint8Array(salt.length+pwb.length); cur.set(salt); cur.set(pwb, salt.length);
+        for(var i=0;i<20000;i++){ cur = sha256(cur); if(i%2000===0) await new Promise(function(r){setTimeout(r,0);}); }
+        return b64(cur);
+    }
+    function randSalt(){ var u=new Uint8Array(16); if(window.crypto&&crypto.getRandomValues) crypto.getRandomValues(u); else for(var i=0;i<16;i++) u[i]=Math.floor(Math.random()*256); return u; }
+
+    function hasLegacyData(){ try { for(var i=0;i<real.length;i++){ var k=real.key(i); if(k && k.indexOf('cm_')===0 && k!=='cm_theme' && k!=='cm_active_page') return true; } } catch(e){} return false; }
+    function prefixFor(u){ return u && u.legacy ? '' : 'cmu_' + (u?u.code:'x') + '__'; }
+    function curUser(){ var c=window.__CM_USER; return db().users.filter(function(u){return u.code===c;})[0] || null; }
+
+    async function signup(name, code, pw){
+        code = toEn(code).trim();
+        if(!validCode(code)) throw new Error('کد ملی وارد شده معتبر نیست.');
+        if((pw||'').length<6) throw new Error('رمز عبور باید حداقل ۶ کاراکتر باشد.');
+        var d=db();
+        if(d.users.some(function(u){return u.code===code;})) throw new Error('برای این کد ملی قبلاً حساب ساخته شده است. وارد شوید.');
+        var alg = hasSubtle() ? 'pbkdf2' : 'sha256js', salt = randSalt();
+        var hash = await derive(pw, salt, alg);
+        d.users.push({code:code, name:(name||'').trim(), alg:alg, salt:b64(salt), hash:hash, created:Date.now(), legacy: d.users.length===0 && hasLegacyData()});
+        saveDb(d);
+        return code;
+    }
+    function failState(){ try { return JSON.parse(real.getItem(K_FAIL)||'{}'); } catch(e){ return {}; } }
+    function lockLeft(){ var f=failState(); return f.until && f.until>Date.now() ? Math.ceil((f.until-Date.now())/1000) : 0; }
+    async function login(code, pw, remember){
+        var left=lockLeft(); if(left) throw new Error('به دلیل تلاش‌های ناموفق پیاپی، ' + left + ' ثانیهٔ دیگر دوباره تلاش کنید.');
+        code = toEn(code).trim();
+        var u = db().users.filter(function(x){return x.code===code;})[0];
+        var ok=false;
+        if(u){ var h = await derive(pw||'', unb64(u.salt), u.alg); ok = (h===u.hash); }
+        else { await derive(pw||'', randSalt(), hasSubtle()?'pbkdf2':'sha256js'); }
+        if(!ok){
+            var f=failState(), n=(f.n||0)+1, o={n:n};
+            if(n>=5) o.until = Date.now() + Math.min(300, 15*(n-4))*1000;
+            real.setItem(K_FAIL, JSON.stringify(o));
+            throw new Error('کد ملی یا رمز عبور درست نیست.');
+        }
+        real.removeItem(K_FAIL);
+        sessionStorage.setItem(K_SESS, code);
+        if(remember) real.setItem(K_REM, code); else real.removeItem(K_REM);
+        return code;
+    }
+    function logout(){ try { sessionStorage.removeItem(K_SESS); real.removeItem(K_REM); } catch(e){} location.reload(); }
+    async function changePassword(oldPw, newPw){
+        var u=curUser(); if(!u) throw new Error('ابتدا وارد شوید.');
+        if((newPw||'').length<6) throw new Error('رمز جدید باید حداقل ۶ کاراکتر باشد.');
+        if(await derive(oldPw||'', unb64(u.salt), u.alg) !== u.hash) throw new Error('رمز فعلی درست نیست.');
+        var d=db(), t=d.users.filter(function(x){return x.code===u.code;})[0], salt=randSalt(), alg=hasSubtle()?'pbkdf2':'sha256js';
+        t.alg=alg; t.salt=b64(salt); t.hash=await derive(newPw, salt, alg); saveDb(d);
+    }
+    function wipeUserData(u){
+        var pre = prefixFor(u), del=[], i, k;
+        for(i=0;i<real.length;i++){ k=real.key(i); if(!k) continue;
+            if(pre==='' ? k.indexOf('cm_')===0 : k.indexOf(pre)===0) del.push(k); }
+        del.forEach(function(x){ real.removeItem(x); });
+    }
+    function deleteAccount(code){
+        code=toEn(code).trim(); var d=db(), u=d.users.filter(function(x){return x.code===code;})[0];
+        if(!u) throw new Error('حسابی با این کد ملی روی این دستگاه نیست.');
+        wipeUserData(u);
+        d.users = d.users.filter(function(x){return x.code!==code;}); saveDb(d);
+        try { sessionStorage.removeItem(K_SESS); if(real.getItem(K_REM)===code) real.removeItem(K_REM); } catch(e){}
+    }
+    function resetUserData(){ wipeUserData(curUser()); }
+
+    /* فضای ذخیره‌سازی اختصاصی هر کاربر؛ جایگزین localStorage داخل برنامه */
+    function store(){
+        var pre = prefixFor(curUser());
+        return {
+            getItem: function(k){ return real.getItem(pre+k); },
+            setItem: function(k,v){ real.setItem(pre+k, v); },
+            removeItem: function(k){ real.removeItem(pre+k); },
+            keys: function(){ var out=[], i, k; for(i=0;i<real.length;i++){ k=real.key(i); if(!k) continue;
+                if(pre===''){ if(k.indexOf('cm_')===0) out.push(k); } else if(k.indexOf(pre)===0) out.push(k.substring(pre.length)); } return out; }
+        };
+    }
+
+    /* ---- رابط کاربری صفحهٔ ورود ---- */
+    function initUI(){
+        var $ = function(id){ return document.getElementById(id); };
+        var root = $('authRoot'); if(!root) return;
+        try { var th = real.getItem('cm_theme'); if(th==='dark' || (!th && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches)) root.classList.add('auth-dark'); } catch(e){}
+        var err = $('authErr');
+        function showErr(m){ err.textContent=m||''; err.classList.toggle('show', !!m); }
+        function tab(name){
+            showErr('');
+            ['login','signup','forgot'].forEach(function(n){ $('pane'+n.charAt(0).toUpperCase()+n.slice(1)).classList.toggle('on', n===name); });
+            var tabs=$('authTabs'); tabs.style.display = name==='forgot' ? 'none' : '';
+            tabs.classList.toggle('signup', name==='signup');
+            tabs.querySelectorAll('.auth-tab').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-tab')===name); });
+            setTimeout(function(){ var f = name==='login'?$('lgCode'):name==='signup'?$('suName'):$('fgCode'); if(f && window.innerWidth>860) f.focus(); },30);
+        }
+        tab(db().users.length ? 'login' : 'signup');
+        root.querySelectorAll('.auth-tab').forEach(function(b){ b.addEventListener('click', function(){ tab(b.getAttribute('data-tab')); }); });
+        $('lnkForgot').addEventListener('click', function(){ tab('forgot'); });
+        $('lnkBack').addEventListener('click', function(){ tab('login'); });
+        root.querySelectorAll('[data-eye]').forEach(function(b){ b.addEventListener('click', function(){ var i=$(b.getAttribute('data-eye')); i.type = i.type==='password' ? 'text' : 'password'; b.textContent = i.type==='password' ? '👁️' : '🙈'; }); });
+        ['lgCode','suCode','fgCode'].forEach(function(id){ $(id).addEventListener('input', function(){ var v=toEn(this.value).replace(/\D/g,'').slice(0,10); if(v!==this.value) this.value=v; }); });
+
+        // اعتبارسنجی زندهٔ ثبت‌نام
+        function checkCode(){ var v=$('suCode').value, h=$('suCodeHint'), i=$('suCode');
+            if(!v){ h.textContent=''; h.className='auth-hint'; i.classList.remove('bad'); return false; }
+            if(v.length<10){ h.textContent='کد ملی ۱۰ رقم است ('+v.length+'/10)'; h.className='auth-hint'; i.classList.remove('bad'); return false; }
+            var ok=validCode(v); h.textContent = ok ? '✓ کد ملی معتبر است' : 'این کد ملی معتبر نیست'; h.className='auth-hint '+(ok?'ok':'bad'); i.classList.toggle('bad', !ok); return ok; }
+        function strength(p){ var s=0; if(p.length>=6) s++; if(p.length>=9) s++; if(/[a-z]/i.test(p)&&/\d/.test(p)) s++; if(/[^a-z0-9]/i.test(p)||(/[A-Z]/.test(p)&&/[a-z]/.test(p))) s++; return p.length<6 ? Math.min(s,1) : Math.max(s,1); }
+        function checkPass(){ var p=$('suPass').value, h=$('suPassHint'), bars=$('suMeter').children, s=p?strength(p):0, cols=['#ef4444','#f59e0b','#84cc16','#10b981'];
+            for(var i=0;i<4;i++) bars[i].style.background = i<s ? cols[s-1] : '';
+            if(!p){ h.textContent=''; h.className='auth-hint'; return false; }
+            if(p.length<6){ h.textContent='رمز کوتاه است ('+p.length+' از حداقل ۶ کاراکتر)'; h.className='auth-hint bad'; return false; }
+            h.textContent = ['','ضعیف — با عدد و حرف ترکیب کنید','متوسط','خوب','قوی'][s]; h.className='auth-hint ok'; return true; }
+        function checkPass2(){ var a=$('suPass').value, b=$('suPass2').value, h=$('suPass2Hint'); if(!b){ h.textContent=''; h.className='auth-hint'; return false; }
+            var ok=a===b; h.textContent= ok ? '✓ یکسان است' : 'با رمز بالا یکی نیست'; h.className='auth-hint '+(ok?'ok':'bad'); return ok; }
+        $('suCode').addEventListener('input', checkCode); $('suPass').addEventListener('input', function(){ checkPass(); checkPass2(); }); $('suPass2').addEventListener('input', checkPass2);
+
+        function busy(btn, on, txt){ btn.disabled=on; if(on){ btn._t=btn.textContent; btn.textContent=txt||'کمی صبر کنید...'; } else if(btn._t) btn.textContent=btn._t; }
+        $('paneLogin').addEventListener('submit', function(e){
+            e.preventDefault(); showErr('');
+            var code=$('lgCode').value, pw=$('lgPass').value, btn=$('btnLogin');
+            if(!validCode(code)){ showErr('کد ملی را درست (۱۰ رقم) وارد کنید.'); return; }
+            if(!pw){ showErr('رمز عبور را وارد کنید.'); return; }
+            busy(btn,true,'در حال بررسی...');
+            login(code, pw, $('lgRemember').checked).then(function(){ location.reload(); }, function(ex){ busy(btn,false); showErr(ex.message); });
+        });
+        $('paneSignup').addEventListener('submit', function(e){
+            e.preventDefault(); showErr('');
+            if(!checkCode()){ showErr('کد ملی معتبر ۱۰ رقمی وارد کنید.'); return; }
+            if(!checkPass()){ showErr('رمز عبور باید حداقل ۶ کاراکتر باشد.'); return; }
+            if(!checkPass2()){ showErr('تکرار رمز با رمز عبور یکی نیست.'); return; }
+            var btn=$('btnSignup'); busy(btn,true,'در حال ساخت حساب...');
+            signup($('suName').value, $('suCode').value, $('suPass').value).then(function(code){ return login(code, $('suPass').value, true); })
+              .then(function(){ location.reload(); }, function(ex){ busy(btn,false); showErr(ex.message); });
+        });
+        $('btnForgotDel').addEventListener('click', function(){
+            showErr(''); var c=$('fgCode').value;
+            if(!validCode(c)){ showErr('کد ملی حساب را درست (۱۰ رقم) بنویسید.'); return; }
+            if(!confirm('حساب و همهٔ داده‌های آن (کلاس‌ها، حضور، نمرات و...) برای همیشه پاک می‌شود. ادامه می‌دهید؟')) return;
+            try { deleteAccount(c); $('fgCode').value=''; tab('signup'); alert('✅ حساب حذف شد. می‌توانید دوباره حساب بسازید.'); }
+            catch(ex){ showErr(ex.message); }
+        });
+        var left=lockLeft(); if(left) showErr('به دلیل تلاش‌های ناموفق پیاپی، ' + left + ' ثانیهٔ دیگر دوباره تلاش کنید.');
+        if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function(){});
+    }
+
+    return {validCode:validCode, signup:signup, login:login, logout:logout, changePassword:changePassword, deleteAccount:deleteAccount, resetUserData:resetUserData,
+            store:store, user:curUser, initUI:initUI, toEn:toEn, _sha256:sha256};
+})();
+if (window.__CM_LOCKED) { if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', CMAuth.initUI); else CMAuth.initUI(); }
+
+</script>
+<script>
+/* ===== PDF class-list extractor (no external libs) ===== */
+var CMPDF = (function(){
+    'use strict';
+    var td = new TextDecoder('latin1');
+
+    async function inflate(bytes){
+        var ds = new DecompressionStream('deflate');
+        var w = ds.writable.getWriter();
+        w.write(bytes).catch(function(){}); w.close().catch(function(){});
+        var buf = await new Response(ds.readable).arrayBuffer();
+        return new Uint8Array(buf);
+    }
+    function bin2str(u8){ var s='', i, C=8192; for(i=0;i<u8.length;i+=C) s+=String.fromCharCode.apply(null,u8.subarray(i,i+C)); return s; }
+    function str2bin(s){ var u=new Uint8Array(s.length); for(var i=0;i<s.length;i++) u[i]=s.charCodeAt(i)&255; return u; }
+
+    /* ---- object index ---- */
+    function indexObjects(s){
+        var objs = {}, re = /(\d+)\s+(\d+)\s+obj\b/g, m, starts=[];
+        while((m=re.exec(s))){ starts.push({n:+m[1], pos:re.lastIndex}); }
+        for(var i=0;i<starts.length;i++){
+            var st=starts[i], end = s.indexOf('endobj', st.pos);
+            if(end<0) end = s.length;
+            var body = s.substring(st.pos, end);
+            var o = {n:st.n, body:body, dict:body, stream:null};
+            var si = body.indexOf('stream');
+            if(si>=0){
+                o.dict = body.substring(0,si);
+                var a = st.pos+si+6;
+                if(s[a]==='\r') a++; if(s[a]==='\n') a++;
+                var e = s.indexOf('endstream', a);
+                if(e<0) e = end;
+                var len = /\/Length\s+(\d+)(?!\s+\d+\s+R)/.exec(o.dict);
+                var b = e;
+                if(len && a+(+len[1])<=e+2 && a+(+len[1])>=a) b = Math.min(e, a+(+len[1]));
+                o.sa=a; o.sb=b;
+            }
+            objs[st.n]=o;
+        }
+        return objs;
+    }
+    async function streamBytes(s, o){
+        if(o.sa==null) return null;
+        var raw = str2bin(s.substring(o.sa,o.sb));
+        if(/\/Filter\s*(\[\s*)?\/FlateDecode/.test(o.dict) || /\/FlateDecode/.test(o.dict)){
+            try { return await inflate(raw); }
+            catch(e){
+                // retry with trimmed trailing whitespace / extended range
+                try { return await inflate(str2bin(s.substring(o.sa, o.sb).replace(/[\r\n]+$/,''))); } catch(e2){ return null; }
+            }
+        }
+        if(/\/Filter/.test(o.dict)) return null;
+        return raw;
+    }
+    function getObj(objs, ref){ return objs[ref]||null; }
+    function refOf(txt, key){
+        var m = new RegExp('/'+key+'\\s+(\\d+)\\s+\\d+\\s+R').exec(txt);
+        return m ? +m[1] : null;
+    }
+    // balanced << >> starting at index of '<<'
+    function balanced(t, i){
+        var d=0, j=i;
+        for(; j<t.length-1; j++){
+            if(t[j]==='<'&&t[j+1]==='<'){ d++; j++; }
+            else if(t[j]==='>'&&t[j+1]==='>'){ d--; j++; if(d===0) return t.substring(i,j+1); }
+        }
+        return t.substring(i);
+    }
+    function subDict(txt, key, objs){
+        var m = new RegExp('/'+key+'\\s*(<<|\\d+\\s+\\d+\\s+R)').exec(txt);
+        if(!m) return null;
+        if(m[1]==='<<') return balanced(txt, m.index+m[0].length-2);
+        var r = /(\d+)/.exec(m[1]); var o = objs[+r[1]];
+        return o ? o.dict : null;
+    }
+
+    /* ---- ObjStm ---- */
+    async function expandObjStms(s, objs){
+        var keys = Object.keys(objs);
+        for(var k=0;k<keys.length;k++){
+            var o = objs[keys[k]];
+            if(!/\/Type\s*\/ObjStm/.test(o.dict)) continue;
+            var bytes = await streamBytes(s,o); if(!bytes) continue;
+            var t = bin2str(bytes);
+            var N = +(/\/N\s+(\d+)/.exec(o.dict)||[0,0])[1], F = +(/\/First\s+(\d+)/.exec(o.dict)||[0,0])[1];
+            var nums = t.substring(0,F).trim().split(/\s+/).map(Number), list=[];
+            for(var i=0;i<N;i++) list.push({n:nums[2*i], off:nums[2*i+1]});
+            for(i=0;i<list.length;i++){
+                var a = F+list[i].off, b = i+1<list.length ? F+list[i+1].off : t.length;
+                var body = t.substring(a,b);
+                if(!objs[list[i].n]) objs[list[i].n] = {n:list[i].n, body:body, dict:body, stream:null};
+            }
+        }
+    }
+
+    /* ---- ToUnicode CMap ---- */
+    function hexToStr(h){
+        h = h.replace(/\s+/g,''); var out='';
+        for(var i=0;i+3<=h.length;i+=4) out += String.fromCharCode(parseInt(h.substr(i,4),16));
+        return out;
+    }
+    function parseCMap(t){
+        var map = {}, codeLen = 0, m;
+        var cs = /begincodespacerange([\s\S]*?)endcodespacerange/.exec(t);
+        if(cs){ var h = /<([0-9A-Fa-f]+)>/.exec(cs[1]); if(h) codeLen = h[1].length/2; }
+        var re = /beginbfchar([\s\S]*?)endbfchar/g;
+        while((m=re.exec(t))){
+            var r2 = /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]*)>/g, mm;
+            while((mm=r2.exec(m[1]))) map[parseInt(mm[1],16)] = hexToStr(mm[2]);
+        }
+        re = /beginbfrange([\s\S]*?)endbfrange/g;
+        while((m=re.exec(t))){
+            var r3 = /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(<([0-9A-Fa-f]*)>|\[([^\]]*)\])/g;
+            while((mm=r3.exec(m[1]))){
+                var lo=parseInt(mm[1],16), hi=parseInt(mm[2],16);
+                if(mm[4]!==undefined){
+                    var base = hexToStr(mm[4]), last = base.charCodeAt(base.length-1);
+                    for(var c=lo;c<=hi;c++) map[c] = base.substring(0,base.length-1)+String.fromCharCode(last+(c-lo));
+                } else {
+                    var arr = mm[5].match(/<([0-9A-Fa-f]*)>/g)||[];
+                    for(var c2=lo;c2<=hi && c2-lo<arr.length;c2++) map[c2]=hexToStr(arr[c2-lo].slice(1,-1));
+                }
+            }
+        }
+        return {map:map, codeLen:codeLen};
+    }
+
+    /* ---- content tokenizer ---- */
+    function tokenize(t){
+        var toks=[], i=0, n=t.length, c;
+        var ws=/[\s\0]/, delim='()<>[]{}/%';
+        while(i<n){
+            c=t[i];
+            if(ws.test(c)){ i++; continue; }
+            if(c==='%'){ while(i<n && t[i]!=='\n' && t[i]!=='\r') i++; continue; }
+            if(c==='/'){
+                var j=i+1; while(j<n && !ws.test(t[j]) && delim.indexOf(t[j])<0) j++;
+                toks.push({k:'name', v:t.substring(i+1,j)}); i=j; continue;
+            }
+            if(c==='('){
+                var d=1, s='', j2=i+1;
+                while(j2<n && d>0){
+                    var ch=t[j2];
+                    if(ch==='\\'){
+                        var nx=t[j2+1];
+                        if(/[0-7]/.test(nx)){ var o=/^[0-7]{1,3}/.exec(t.substr(j2+1,3))[0]; s+=String.fromCharCode(parseInt(o,8)&255); j2+=1+o.length; continue; }
+                        var map={n:'\n',r:'\r',t:'\t',b:'\b',f:'\f'};
+                        if(nx==='\n'||nx==='\r'){ j2+=2; continue; }
+                        s += map[nx]!==undefined ? map[nx] : nx; j2+=2; continue;
+                    }
+                    if(ch==='(') d++;
+                    if(ch===')'){ d--; if(d===0){ j2++; break; } }
+                    s+=ch; j2++;
+                }
+                toks.push({k:'str', v:s}); i=j2; continue;
+            }
+            if(c==='<'){
+                if(t[i+1]==='<'){ toks.push({k:'op', v:'<<'}); i+=2; continue; }
+                var e=t.indexOf('>',i); var hx=t.substring(i+1,e).replace(/\s+/g,'');
+                if(hx.length%2) hx+='0';
+                var s2=''; for(var q=0;q<hx.length;q+=2) s2+=String.fromCharCode(parseInt(hx.substr(q,2),16));
+                toks.push({k:'str', v:s2, hex:true}); i=e+1; continue;
+            }
+            if(c==='>'){ if(t[i+1]==='>'){ toks.push({k:'op', v:'>>'}); i+=2; } else i++; continue; }
+            if(c==='['){ toks.push({k:'op', v:'['}); i++; continue; }
+            if(c===']'){ toks.push({k:'op', v:']'}); i++; continue; }
+            if(c==='{'||c==='}'){ i++; continue; }
+            var j3=i; while(j3<n && !ws.test(t[j3]) && delim.indexOf(t[j3])<0) j3++;
+            var w=t.substring(i,j3); i=j3;
+            if(/^[+-]?(\d+\.?\d*|\.\d+)$/.test(w)) toks.push({k:'num', v:parseFloat(w)});
+            else toks.push({k:'op', v:w});
+        }
+        return toks;
+    }
+    function mmul(a,b){ // a then b : result = a * b (row vectors)
+        return [a[0]*b[0]+a[1]*b[2], a[0]*b[1]+a[1]*b[3], a[2]*b[0]+a[3]*b[2], a[2]*b[1]+a[3]*b[3], a[4]*b[0]+a[5]*b[2]+b[4], a[4]*b[1]+a[5]*b[3]+b[5]];
+    }
+    function actualTextOf(str){ // str: bytes string of UTF-16BE with BOM
+        var s=str; if(s.charCodeAt(0)===0xFE && s.charCodeAt(1)===0xFF) s=s.substring(2);
+        var out=''; for(var i=0;i+1<s.length;i+=2) out+=String.fromCharCode((s.charCodeAt(i)<<8)|s.charCodeAt(i+1));
+        return out;
+    }
+
+    // interpret a page content stream → list of runs {x,y,x2,text}
+    function interpret(content, fonts){
+        var toks = tokenize(content), st=[], ctm=[1,0,0,1,0,0], stack=[];
+        var tm=[1,0,0,1,0,0], tlm=[1,0,0,1,0,0], font=null, fsize=1, mc=[], leading=0;
+        var glyphs=[]; // {x,y,u,revId, adv}
+        var revCounter=0, curRev=null;
+        var operands=[];
+        function textOfCode(f, s){
+            var out=[], cl = f && f.codeLen ? f.codeLen : (s.length%2===0 && f && f.two ? 2 : 1);
+            if(!f) return [{u:'',w:1}];
+            cl = f.codeLen || 1;
+            for(var i=0;i+cl<=s.length;i+=cl){
+                var code=0; for(var k=0;k<cl;k++) code=(code<<8)|s.charCodeAt(i+k);
+                out.push({u: f.map[code]!==undefined ? f.map[code] : '', code:code});
+            }
+            return out;
+        }
+        function emit(strv){
+            var spanAT=null, spanDepth=-1;
+            for(var i=mc.length-1;i>=0;i--) if(mc[i].at!==undefined){ spanAT=mc[i]; break; }
+            var rev=null; for(i=mc.length-1;i>=0;i--) if(mc[i].rev){ rev=mc[i]; break; }
+            var units = textOfCode(font, strv);
+            var full = mmul(tm, ctm);
+            var x = full[4], y = full[5];
+            if(spanAT){
+                if(!spanAT.used){
+                    spanAT.used=true;
+                    glyphs.push({x:x,y:y,u:spanAT.at,rev:rev?rev.id:0,fs:fsize*Math.abs(full[0])});
+                } else {
+                    // later glyph inside same span: contributes nothing (text already given)
+                    var g=glyphs[glyphs.length-1]; if(g) g.x2=x;
+                }
+            } else {
+                for(var k=0;k<units.length;k++){
+                    glyphs.push({x:x,y:y,u:units[k].u,rev:rev?rev.id:0,fs:fsize*Math.abs(full[0])});
+                }
+            }
+        }
+        function adv(dx){ tm = mmul([1,0,0,1,dx,0], tm); }
+        for(var p=0;p<toks.length;p++){
+            var t=toks[p];
+            if(t.k!=='op'){ operands.push(t); continue; }
+            var op=t.v, a=operands;
+            if(op==='[' ){ // collect array until ]
+                var arr=[]; p++;
+                while(p<toks.length && !(toks[p].k==='op' && toks[p].v===']')){ arr.push(toks[p]); p++; }
+                operands.push({k:'arr', v:arr}); continue;
+            }
+            if(op==='<<'){ // dict: collect key/values flat until >>
+                var depth=1, items=[]; p++;
+                while(p<toks.length && depth>0){
+                    var q=toks[p];
+                    if(q.k==='op' && q.v==='<<') depth++;
+                    else if(q.k==='op' && q.v==='>>'){ depth--; if(depth===0) break; }
+                    items.push(q); p++;
+                }
+                var d={};
+                for(var z=0;z+1<items.length;z++) if(items[z].k==='name'){ d[items[z].v]=items[z+1]; }
+                operands.push({k:'dict', v:d}); continue;
+            }
+            switch(op){
+                case 'q': stack.push(ctm.slice()); break;
+                case 'Q': if(stack.length) ctm=stack.pop(); break;
+                case 'cm': if(a.length>=6){ ctm = mmul(a.slice(-6).map(function(o){return o.v;}), ctm); } break;
+                case 'BT': tm=[1,0,0,1,0,0]; tlm=[1,0,0,1,0,0]; break;
+                case 'ET': break;
+                case 'Tf': if(a.length>=2){ font = fonts[a[a.length-2].v]||null; fsize=a[a.length-1].v; } break;
+                case 'TL': leading=a.length?a[a.length-1].v:0; break;
+                case 'Tm': if(a.length>=6){ tm=a.slice(-6).map(function(o){return o.v;}); tlm=tm.slice(); } break;
+                case 'Td': if(a.length>=2){ tlm=mmul([1,0,0,1,a[a.length-2].v,a[a.length-1].v], tlm); tm=tlm.slice(); } break;
+                case 'TD': if(a.length>=2){ leading=-a[a.length-1].v; tlm=mmul([1,0,0,1,a[a.length-2].v,a[a.length-1].v], tlm); tm=tlm.slice(); } break;
+                case 'T*': tlm=mmul([1,0,0,1,0,-leading], tlm); tm=tlm.slice(); break;
+                case 'Tj': if(a.length) emit(a[a.length-1].v); break;
+                case "'": tlm=mmul([1,0,0,1,0,-leading], tlm); tm=tlm.slice(); if(a.length) emit(a[a.length-1].v); break;
+                case 'TJ': if(a.length && a[a.length-1].k==='arr'){
+                    a[a.length-1].v.forEach(function(e){ if(e.k==='str') emit(e.v); });
+                } break;
+                case 'BMC': mc.push({name:a.length?a[a.length-1].v:'', rev: a.length && a[a.length-1].v==='ReversedChars', id: (a.length && a[a.length-1].v==='ReversedChars') ? ++revCounter : 0}); break;
+                case 'BDC': {
+                    var nm = a.length>=2 ? a[a.length-2].v : '', pr = a.length ? a[a.length-1] : null, ent={name:nm};
+                    if(pr && pr.k==='dict' && pr.v.ActualText && pr.v.ActualText.k==='str'){ ent.at = actualTextOf(pr.v.ActualText.v); ent.used=false; }
+                    if(nm==='ReversedChars'){ ent.rev=true; ent.id=++revCounter; }
+                    mc.push(ent); break; }
+                case 'EMC': mc.pop(); break;
+            }
+            operands=[];
+        }
+        return glyphs;
+    }
+
+    function isDigitish(ch){ return /[0-9۰-۹٠-٩]/.test(ch); }
+    // glyphs → runs per line (y-cluster) in logical order
+    function buildRuns(glyphs){
+        // group consecutive glyphs by rev id (rev>0) ; non-rev glyphs are individually visual-LTR? treat as logical sequence
+        var runs=[], i=0;
+        while(i<glyphs.length){
+            var g=glyphs[i], j=i;
+            if(g.rev){ while(j+1<glyphs.length && glyphs[j+1].rev===g.rev) j++; }
+            else { while(j+1<glyphs.length && !glyphs[j+1].rev && Math.abs(glyphs[j+1].y-g.y)<0.5 && glyphs[j+1].x>=glyphs[j].x-0.01 && glyphs[j+1].x-glyphs[j].x < g.fs*1.2) j++; }
+            var seg=glyphs.slice(i,j+1), units=seg.map(function(q){ return q.u.replace(/ /g,' '); });
+            var text;
+            if(g.rev){
+                text = units.slice().reverse().join('');
+                // re-reverse digit runs (with internal separators)
+                text = text.replace(/[0-9۰-۹٠-٩](?:[0-9۰-۹٠-٩\-\/:.,]*[0-9۰-۹٠-٩])?/g, function(m){ return m.split('').reverse().join(''); });
+            } else text = units.join('');
+            var xs = seg.map(function(q){return q.x;});
+            var mn=Math.min.apply(null,xs), mx=Math.max.apply(null,xs)+g.fs*0.5;
+            runs.push({text:text, x1:mn, x2:mx, y:g.y});
+            i=j+1;
+        }
+        return runs;
+    }
+
+    function norm(s){
+        return s.replace(/[يى]/g,'ی').replace(/ك/g,'ک').replace(/[‌‏‎‪-‮]/g,' ').replace(/[ً-ٟـ]/g,'').replace(/\s+/g,' ').trim();
+    }
+    function toEnDigits(s){
+        return s.replace(/[۰-۹]/g,function(c){return String(c.charCodeAt(0)-0x06F0);}).replace(/[٠-٩]/g,function(c){return String(c.charCodeAt(0)-0x0660);});
+    }
+    function validNationalCode(c){
+        c = toEnDigits(String(c||'')).trim();
+        if(!/^\d{10}$/.test(c)) return false;
+        if(/^(\d)\1{9}$/.test(c)) return false;
+        var s=0; for(var i=0;i<9;i++) s+=(+c[i])*(10-i);
+        var r=s%11, ck=+c[9];
+        return r<2 ? ck===r : ck===11-r;
+    }
+
+    var SECOND = ['اصغر','اکبر','رضا','حسین','حسن','مهدی','امین','جواد','طاها','عباس','علی','محمد','مصطفی','صالح','هادی','پارسا','ابوالفضل','سجاد','متین','یاسین','مجتبی','کیان','آرین','آریا','سینا','ایلیا','یوسف','ابراهیم','اسماعیل','میلاد','پویا','نیما','نوید','آرمان','فاطمه','زهرا','زینب','معصومه','سادات','هانیه','نرگس'];
+    var FIRST  = ['علی','محمد','امیر','سید','میر','ابو','عبد','نور','محمدعلی','حاج','علیرضا'];
+    function splitName(full){
+        var w = norm(full).split(' ').filter(Boolean);
+        if(w.length<=1) return {family:'', first:w[0]||''};
+        if(w.length===2) return {family:w[0], first:w[1]};
+        var last=w[w.length-1], prev=w[w.length-2];
+        if(w.length>=3 && FIRST.indexOf(prev)>=0 && SECOND.indexOf(last)>=0 && w.length>=3){
+            return {family:w.slice(0,-2).join(' '), first:prev+' '+last};
+        }
+        if(w.length===3) return {family:w.slice(0,2).join(' '), first:last};
+        return {family:w.slice(0,-1).join(' '), first:last};
+    }
+
+    async function loadPages(buf){
+        var u8 = new Uint8Array(buf), s = bin2str(u8);
+        if(s.indexOf('%PDF')<0) throw new Error('این فایل PDF معتبر نیست.');
+        if(/\/Encrypt\b/.test(s.substring(Math.max(0,s.length-4000)))) throw new Error('این PDF رمزگذاری شده است.');
+        var objs = indexObjects(s);
+        await expandObjStms(s, objs);
+        // pages in order
+        var pages=[];
+        var allKeys = Object.keys(objs).map(Number).sort(function(a,b){return a-b;});
+        function kids(o, inherit){
+            var res = subDict(o.dict,'Resources',objs) || inherit;
+            if(/\/Type\s*\/Pages\b/.test(o.dict)){
+                var km = /\/Kids\s*\[([^\]]*)\]/.exec(o.dict);
+                if(km){ var re=/(\d+)\s+\d+\s+R/g, m; while((m=re.exec(km[1]))){ var c=objs[+m[1]]; if(c) kids(c,res); } }
+            } else if(/\/Type\s*\/Page\b/.test(o.dict)) pages.push({o:o,res:res});
+        }
+        var roots = allKeys.filter(function(k){ return /\/Type\s*\/Pages\b/.test(objs[k].dict) && !/\/Parent\b/.test(objs[k].dict); });
+        roots.forEach(function(k){ kids(objs[k], null); });
+        if(!pages.length) allKeys.forEach(function(k){ var o=objs[k]; if(/\/Type\s*\/Page\b/.test(o.dict)) pages.push({o:o, res:subDict(o.dict,'Resources',objs)}); });
+        return {s:s, objs:objs, pages:pages};
+    }
+
+    async function pageGlyphs(doc, pg){
+        var s=doc.s, objs=doc.objs;
+        // fonts
+        var fonts={}, fd = pg.res ? subDict(pg.res,'Font',objs) : null;
+        if(fd){
+            var re=/\/([^\s\/<>\[\]()]+)\s+(\d+)\s+\d+\s+R/g, m;
+            while((m=re.exec(fd))){
+                var fo = objs[+m[2]]; if(!fo) continue;
+                var tu = refOf(fo.dict,'ToUnicode'), f={map:{}, codeLen:0};
+                if(tu && objs[tu]){ var b=await streamBytes(s, objs[tu]); if(b){ var cm=parseCMap(bin2str(b)); f.map=cm.map; f.codeLen=cm.codeLen; } }
+                if(!f.codeLen) f.codeLen = /Identity-H|Type0/.test(fo.dict) ? 2 : 1;
+                fonts[m[1]]=f;
+            }
+        }
+        // contents
+        var cm0 = /\/Contents\s*(\[[^\]]*\]|\d+\s+\d+\s+R)/.exec(pg.o.dict), refs=[];
+        if(cm0){
+            var rr=/(\d+)\s+\d+\s+R/g, mm;
+            while((mm=rr.exec(cm0[1]))){ var co=objs[+mm[1]]; if(!co) continue;
+                if(co.sa==null && /\[/.test(co.body)){ var r3=/(\d+)\s+\d+\s+R/g, m3; while((m3=r3.exec(co.body))) refs.push(+m3[1]); }
+                else refs.push(+mm[1]); }
+        }
+        var txt='';
+        for(var i=0;i<refs.length;i++){ var o=objs[refs[i]]; var b2=o&&await streamBytes(s,o); if(b2) txt+=bin2str(b2)+'\n'; }
+        return interpret(txt, fonts);
+    }
+
+    function groupLines(runs){
+        runs = runs.filter(function(r){ return r.text.trim()!==''; });
+        runs.sort(function(a,b){ return a.y-b.y; });
+        var lines=[], tol=4;
+        runs.forEach(function(r){
+            var L=lines[lines.length-1];
+            if(L && Math.abs(L.y-r.y)<=tol){ L.items.push(r); }
+            else lines.push({y:r.y, items:[r]});
+        });
+        lines.forEach(function(L){ L.items.sort(function(a,b){ return b.x2-a.x2; }); }); // RTL: right → left
+        return lines;
+    }
+
+    /* main: returns {students:[{family,first,father,code,ok}], meta:{year,className}} */
+    async function parseClassListPDF(buf){
+        var doc = await loadPages(buf);
+        var students=[], seen={}, meta={}, debug=[];
+        for(var pi=0;pi<doc.pages.length;pi++){
+            var glyphs = await pageGlyphs(doc, doc.pages[pi]);
+            var runs = buildRuns(glyphs);
+            var lines = groupLines(runs);
+            // find header columns
+            var hdr=null;
+            lines.forEach(function(L){ L.text = L.items.map(function(i){return norm(i.text);}).join(' | '); debug.push(L.text); });
+            for(var li=0; li<lines.length; li++){
+                var L=lines[li], t=L.text.replace(/\s/g,'');
+                if(/نام/.test(t) && /پدر/.test(t) && !hdr){ hdr=li; }
+                var ym = /(1[34]\d\d|۱[۳۴][۰-۹]{2})\s*[-–]\s*(1[34]\d\d|۱[۳۴][۰-۹]{2})/.exec(toEnDigits(L.text));
+                if(ym && !meta.year) meta.year = ym[1]+'-'+ym[2];
+                var cm1 = /(?:کلاس|پایه)[^|]*?[:：]?\s*([^|]+)/.exec(L.text);
+            }
+            // data rows: lines containing a 10-digit national code
+            for(li=0; li<lines.length; li++){
+                var items = lines[li].items;
+                var codeIdx=-1, code='';
+                for(var k=0;k<items.length;k++){
+                    var d = toEnDigits(norm(items[k].text)).replace(/\s/g,'');
+                    if(/^\d{10}$/.test(d)){ codeIdx=k; code=d; break; }
+                }
+                if(codeIdx<0) continue;
+                // cells to the left of code (RTL order) that contain letters
+                var rest = items.slice(codeIdx+1).filter(function(r){ return /[؀-ۿ]/.test(r.text) && !/^[\d\s]+$/.test(toEnDigits(r.text)); });
+                // merge by gaps: first group = name, second = father
+                var groups=[], cur=null;
+                rest.forEach(function(r){
+                    if(cur && (cur.x1 - r.x2) < 14) { cur.parts.push(r); cur.x1=Math.min(cur.x1,r.x1); }
+                    else { cur={parts:[r], x1:r.x1, x2:r.x2}; groups.push(cur); }
+                });
+                var gtxt = groups.map(function(g){ return norm(g.parts.map(function(p){return p.text;}).join(' ')); });
+                var full = gtxt[0]||'', father = gtxt[1]||'';
+                if(seen[code]) continue; seen[code]=1;
+                var sp = splitName(full);
+                var rn=0; for(var q2=0;q2<codeIdx;q2++){ var dd=toEnDigits(norm(items[q2].text)); if(/^\d{1,3}$/.test(dd)){ rn=+dd; break; } }
+                students.push({family:sp.family, first:sp.first, father:father, code:code, ok:validNationalCode(code), rn:rn});
+            }
+        }
+        if(students.length>1 && students.every(function(x){return x.rn>0;})) students.sort(function(a,b){return a.rn-b.rn;});
+        return {students:students, meta:meta, debug:debug};
+    }
+    return {parse:parseClassListPDF, validNationalCode:validNationalCode, splitName:splitName, _:{buildRuns:buildRuns, interpret:interpret, loadPages:loadPages, pageGlyphs:pageGlyphs, groupLines:groupLines}};
+})();
+
+
+</script>
+<script>
 (function() {
     'use strict';
+    if (window.__CM_LOCKED) return;
+    var localStorage = CMAuth.store();
 
     /* ═══════════════════════════════════════════════════
        🧰 توابع کمکی
@@ -2036,6 +2949,13 @@
             if (raw) {
                 appData = JSON.parse(raw);
                 if (!appData.classes) appData.classes = [];
+                var purged = false;
+                appData.classes.forEach(function(c) {
+                    (c.students || []).forEach(function(st) {
+                        if ('fatherPhone' in st || 'motherPhone' in st || 'shadPhone' in st) { purged = true; delete st.fatherPhone; delete st.motherPhone; delete st.shadPhone; }
+                    });
+                });
+                if (purged) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); } catch(e2) {} }
             }
         } catch(e) {
             console.error('خطا در بارگذاری:', e);
@@ -2159,7 +3079,7 @@
                     '<div class="empty-state">' +
                         '<div class="empty-state-icon">📚</div>' +
                         '<div class="empty-state-text">هنوز کلاسی اضافه نشده</div>' +
-                        '<div class="empty-state-hint">روی «افزودن کلاس» بزن یا فایل JSON سیدا را وارد کن</div>' +
+                        '<div class="empty-state-hint">روی «افزودن کلاس» بزن و بعد لیست دانش‌آموزان را از PDF یا اکسل وارد کن</div>' +
                     '</div>' +
                 '</div>';
             return;
@@ -2276,95 +3196,6 @@
     }
 
     /* ═══════════════════════════════════════════════════
-       📤📥 Export / Import JSON
-       ═══════════════════════════════════════════════════ */
-
-    document.getElementById('btnExportJSON').addEventListener('click', function() {
-        if (appData.classes.length === 0) { alert('❌ هنوز داده‌ای برای خروجی نیست.'); return; }
-        var dataStr = JSON.stringify({ classes: appData.classes }, null, 2);
-        var blob = new Blob(['\ufeff' + dataStr], { type: 'application/json;charset=utf-8' });
-        var link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'class_manager_backup_' + new Date().toISOString().slice(0, 10) + '.json';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(function() { URL.revokeObjectURL(link.href); }, 1000);
-    });
-
-    document.getElementById('btnImportJSON').addEventListener('click', function() {
-        document.getElementById('importTextarea').value = '';
-        document.getElementById('importFileInput').value = '';
-        document.getElementById('modalImport').classList.add('open');
-    });
-
-    document.getElementById('importFileInput').addEventListener('change', function(e) {
-        var file = e.target.files[0];
-        if (!file) return;
-        var reader = new FileReader();
-        reader.onload = function(ev) { document.getElementById('importTextarea').value = ev.target.result; };
-        reader.readAsText(file, 'UTF-8');
-    });
-
-    document.getElementById('btnDoImport').addEventListener('click', function() {
-        var text = document.getElementById('importTextarea').value.trim();
-        if (!text) { alert('❌ فایل یا متن JSON را وارد کنید.'); return; }
-
-        var parsed;
-        try { parsed = JSON.parse(text); }
-        catch(e) { alert('❌ JSON نامعتبر:\n' + e.message); return; }
-
-        var classes = parsed.classes || (Array.isArray(parsed) ? parsed : null);
-        if (!classes || !Array.isArray(classes)) { alert('❌ ساختار JSON صحیح نیست.'); return; }
-
-        var totalClasses = 0, totalStudents = 0;
-
-        classes.forEach(function(c) {
-            if (!c || !c.className) return;
-            var students = [];
-            if (Array.isArray(c.students)) {
-                c.students.forEach(function(s) {
-                    if (!s) return;
-                    students.push({
-                        id: genId(),
-                        name: (s.name || '').trim(),
-                        family: (s.family || '').trim(),
-                        father: (s.father || '').trim(),
-                        codemelli: String(s.codemelli || s.code || '').trim(),
-                        fatherPhone: String(s.fatherPhone || '').trim(),
-                        motherPhone: String(s.motherPhone || '').trim(),
-                        shadPhone: String(s.shadPhone || '').trim()
-                    });
-                });
-            }
-
-            var existing = null;
-            for (var i = 0; i < appData.classes.length; i++) {
-                if (appData.classes[i].className === c.className) { existing = appData.classes[i]; break; }
-            }
-
-            if (existing) {
-                existing.gradeName = c.gradeName || existing.gradeName || '';
-                existing.students = students;
-            } else {
-                appData.classes.push({
-                    id: genId(),
-                    className: c.className,
-                    gradeName: c.gradeName || '',
-                    students: students
-                });
-            }
-            totalClasses++;
-            totalStudents += students.length;
-        });
-
-        saveData();
-        renderClasses();
-        closeModal('modalImport');
-        alert('✅ ' + totalClasses + ' کلاس و ' + totalStudents + ' دانش‌آموز وارد شد.');
-    });
-
-    /* ═══════════════════════════════════════════════════
        👥 دانش‌آموزان
        ═══════════════════════════════════════════════════ */
 
@@ -2442,7 +3273,7 @@
         var filtered = allStudents.filter(function(s) {
             if (!searchQuery) return true;
             var q = searchQuery.toLowerCase();
-            var haystack = [s.name, s.family, s.codemelli, s.father, s.fatherPhone, s.motherPhone, s.shadPhone].join(' ').toLowerCase();
+            var haystack = [s.name, s.family, s.codemelli, s.father].join(' ').toLowerCase();
             return haystack.indexOf(q) !== -1;
         });
 
@@ -2484,9 +3315,6 @@
         html += '<th>نام و نام خانوادگی</th>';
         html += '<th>نام پدر</th>';
         html += '<th>کد ملی</th>';
-        html += '<th>تلفن پدر</th>';
-        html += '<th>تلفن مادر</th>';
-        html += '<th>تلفن شاد</th>';
         html += '<th>عملیات</th>';
         html += '</tr></thead><tbody>';
 
@@ -2497,9 +3325,6 @@
             html += '<td><strong>' + escapeHtml((s.family || '') + ' ' + (s.name || '')) + '</strong></td>';
             html += '<td>' + escapeHtml(s.father || '—') + '</td>';
             html += '<td>' + escapeHtml(s.codemelli || '—') + '</td>';
-            html += '<td>' + renderPhone(s.fatherPhone) + '</td>';
-            html += '<td>' + renderPhone(s.motherPhone) + '</td>';
-            html += '<td>' + renderPhone(s.shadPhone) + '</td>';
             html += '<td><div class="actions-cell">';
             html += '<button class="btn btn-outline btn-sm" data-edit-student="' + origIdx + '">✏️</button>';
             html += '<button class="btn btn-danger btn-sm" data-delete-student="' + origIdx + '">🗑️</button>';
@@ -2520,20 +3345,6 @@
                 deleteStudent(parseInt(btn.getAttribute('data-delete-student')));
             });
         });
-        container.querySelectorAll('.phone-copy').forEach(function(el) {
-            el.addEventListener('click', function() {
-                var phone = el.getAttribute('data-phone');
-                if (!phone) return;
-                copyToClipboard(phone);
-                el.classList.add('copied');
-                setTimeout(function() { el.classList.remove('copied'); }, 1200);
-            });
-        });
-    }
-
-    function renderPhone(phone) {
-        if (!phone) return '—';
-        return '<span class="phone-copy" data-phone="' + escapeHtml(phone) + '" title="کلیک برای کپی">' + escapeHtml(phone) + '</span>';
     }
 
     function copyToClipboard(text) {
@@ -2565,10 +3376,7 @@
             name: document.getElementById('inputStName'),
             family: document.getElementById('inputStFamily'),
             father: document.getElementById('inputStFather'),
-            code: document.getElementById('inputStCode'),
-            fatherPhone: document.getElementById('inputStFatherPhone'),
-            motherPhone: document.getElementById('inputStMotherPhone'),
-            shadPhone: document.getElementById('inputStShadPhone')
+            code: document.getElementById('inputStCode')
         };
 
         if (editingStudentIndex >= 0) {
@@ -2578,9 +3386,6 @@
             inputs.family.value = s.family || '';
             inputs.father.value = s.father || '';
             inputs.code.value = s.codemelli || '';
-            inputs.fatherPhone.value = s.fatherPhone || '';
-            inputs.motherPhone.value = s.motherPhone || '';
-            inputs.shadPhone.value = s.shadPhone || '';
         } else {
             title.textContent = '➕ افزودن دانش‌آموز';
             Object.keys(inputs).forEach(function(k) { inputs[k].value = ''; });
@@ -2603,10 +3408,7 @@
             name: name,
             family: family,
             father: document.getElementById('inputStFather').value.trim(),
-            codemelli: document.getElementById('inputStCode').value.trim(),
-            fatherPhone: document.getElementById('inputStFatherPhone').value.trim(),
-            motherPhone: document.getElementById('inputStMotherPhone').value.trim(),
-            shadPhone: document.getElementById('inputStShadPhone').value.trim()
+            codemelli: document.getElementById('inputStCode').value.trim()
         };
 
         var cls = appData.classes[currentClassIndex];
@@ -3017,6 +3819,124 @@
         if (currentClassIndex >= 0 && currentClassIndex < appData.classes.length) sel.value = currentClassIndex;
     }
 
+    /* ═══════════════════════════════════════════════════
+       📄 ورود لیست کلاس از PDF
+       ═══════════════════════════════════════════════════ */
+    var pdfRows = [];
+
+    function pdfStatus(msg, bad) {
+        var el = document.getElementById('pdfStatus');
+        el.style.color = bad ? 'var(--danger, #dc2626)' : 'var(--text-muted)';
+        el.textContent = msg || '';
+    }
+
+    function renderPdfPreview() {
+        var t = document.getElementById('pdfPreviewTable');
+        var h = '<thead><tr><th>#</th><th>نام خانوادگی</th><th>نام</th><th>نام پدر</th><th>کد ملی</th><th></th></tr></thead><tbody>';
+        pdfRows.forEach(function(r, i) {
+            var bad = r.codemelli && !CMPDF.validNationalCode(r.codemelli);
+            h += '<tr data-i="' + i + '">' +
+                '<td>' + toPersianNum(i + 1) + '</td>' +
+                '<td><input class="form-input pdf-in" data-f="family" value="' + escapeHtml(r.family) + '" style="min-width:110px;padding:6px;"></td>' +
+                '<td><input class="form-input pdf-in" data-f="name" value="' + escapeHtml(r.name) + '" style="min-width:90px;padding:6px;"></td>' +
+                '<td><input class="form-input pdf-in" data-f="father" value="' + escapeHtml(r.father) + '" style="min-width:80px;padding:6px;"></td>' +
+                '<td><input class="form-input pdf-in" data-f="codemelli" value="' + escapeHtml(r.codemelli) + '" inputmode="numeric" style="min-width:110px;padding:6px;direction:ltr;' + (bad ? 'border-color:#dc2626;' : '') + '" title="' + (bad ? 'کد ملی معتبر به نظر نمی‌رسد' : '') + '"></td>' +
+                '<td style="white-space:nowrap;"><button class="btn btn-outline btn-sm" data-swap="' + i + '" title="جابجایی نام و نام خانوادگی">⇄</button> ' +
+                '<button class="btn btn-danger btn-sm" data-pdel="' + i + '" title="حذف از لیست">✕</button></td></tr>';
+        });
+        t.innerHTML = h + '</tbody>';
+        t.querySelectorAll('.pdf-in').forEach(function(inp) {
+            inp.addEventListener('input', function() {
+                var i = +inp.closest('tr').getAttribute('data-i');
+                pdfRows[i][inp.getAttribute('data-f')] = inp.value;
+            });
+        });
+        t.querySelectorAll('[data-swap]').forEach(function(b) {
+            b.addEventListener('click', function() {
+                var r = pdfRows[+b.getAttribute('data-swap')], x = r.family; r.family = r.name; r.name = x; renderPdfPreview();
+            });
+        });
+        t.querySelectorAll('[data-pdel]').forEach(function(b) {
+            b.addEventListener('click', function() {
+                pdfRows.splice(+b.getAttribute('data-pdel'), 1); renderPdfPreview();
+            });
+        });
+        document.getElementById('btnDoPdfImport').disabled = pdfRows.length === 0;
+    }
+
+    document.getElementById('btnPdfImport').addEventListener('click', function() {
+        if (appData.classes.length === 0) { alert('❌ ابتدا یک کلاس بسازید.'); return; }
+        var sel = document.getElementById('pdfClassSelect');
+        sel.innerHTML = '';
+        appData.classes.forEach(function(c, i) {
+            var o = document.createElement('option');
+            o.value = i; o.textContent = c.className + (c.gradeName ? ' - ' + c.gradeName : '');
+            sel.appendChild(o);
+        });
+        if (currentClassIndex >= 0 && currentClassIndex < appData.classes.length) sel.value = currentClassIndex;
+        document.getElementById('pdfFileInput').value = '';
+        document.getElementById('pdfPreviewWrap').style.display = 'none';
+        document.getElementById('btnDoPdfImport').disabled = true;
+        pdfRows = []; pdfStatus('');
+        document.getElementById('modalPdf').classList.add('open');
+    });
+
+    document.getElementById('pdfFileInput').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        pdfRows = [];
+        document.getElementById('pdfPreviewWrap').style.display = 'none';
+        document.getElementById('btnDoPdfImport').disabled = true;
+        if (typeof DecompressionStream === 'undefined') { pdfStatus('❌ مرورگر شما از خواندن PDF پشتیبانی نمی‌کند. لطفاً مرورگر را به‌روز کنید یا از اکسل استفاده کنید.', true); return; }
+        pdfStatus('⏳ در حال خواندن PDF...');
+        var reader = new FileReader();
+        reader.onerror = function() { pdfStatus('❌ خواندن فایل ممکن نشد.', true); };
+        reader.onload = function(ev) {
+            CMPDF.parse(ev.target.result).then(function(res) {
+                if (!res.students.length) {
+                    pdfStatus('❌ در این PDF دانش‌آموزی (ردیف دارای کد ملی ۱۰ رقمی) پیدا نشد. اگر PDF اسکن/عکس است قابل خواندن نیست؛ از فایل اکسل نمونه استفاده کنید.', true);
+                    return;
+                }
+                pdfRows = res.students.map(function(s) {
+                    return { family: s.family, name: s.first, father: s.father, codemelli: s.code };
+                });
+                var badCount = res.students.filter(function(s) { return !s.ok; }).length;
+                pdfStatus('✅ ' + toPersianNum(pdfRows.length) + ' دانش‌آموز پیدا شد.' + (badCount ? ' ⚠️ ' + toPersianNum(badCount) + ' کد ملی نامعتبر (با کادر قرمز مشخص شده).' : ''));
+                document.getElementById('pdfPreviewWrap').style.display = 'block';
+                renderPdfPreview();
+            }).catch(function(err) {
+                pdfStatus('❌ ' + (err && err.message ? err.message : 'خطا در خواندن PDF'), true);
+            });
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    document.getElementById('btnDoPdfImport').addEventListener('click', function() {
+        var idx = parseInt(document.getElementById('pdfClassSelect').value, 10);
+        var cls = appData.classes[idx];
+        if (!cls) { alert('❌ کلاس مقصد را انتخاب کنید.'); return; }
+        var list = pdfRows.filter(function(r) { return (r.name || '').trim() || (r.family || '').trim(); });
+        if (!list.length) return;
+        var mode = document.getElementById('pdfMode').value;
+        if (mode === 'replace' && (cls.students || []).length > 0) {
+            if (!confirm('لیست فعلی ' + cls.students.length + ' دانش‌آموز پاک و با لیست جدید جایگزین می‌شود. مطمئنید؟')) return;
+        }
+        var base = mode === 'replace' ? [] : (cls.students || []).slice(), added = 0, skipped = 0;
+        list.forEach(function(r) {
+            var st = { name: r.name.trim(), family: r.family.trim(), father: (r.father || '').trim(), codemelli: (r.codemelli || '').trim() };
+            var dup = base.some(function(x) {
+                if (st.codemelli && x.codemelli) return x.codemelli === st.codemelli;
+                return x.name === st.name && x.family === st.family && (x.father || '') === st.father;
+            });
+            if (dup) { skipped++; return; }
+            st.id = genId(); base.push(st); added++;
+        });
+        cls.students = base;
+        saveData(); renderClasses(); closeModal('modalPdf'); selectClassInStudentPage(idx);
+        alert('✅ ' + toPersianNum(added) + ' دانش‌آموز وارد شد.' + (skipped ? '\n' + toPersianNum(skipped) + ' مورد تکراری نادیده گرفته شد.' : ''));
+    });
+
+
     document.getElementById('btnExcelImport').addEventListener('click', function() {
         if (appData.classes.length === 0) { alert('❌ ابتدا یک کلاس بسازید.'); return; }
         fillExcelClassSelect();
@@ -3061,7 +3981,7 @@
                         return x.name === st.name && x.family === st.family && (x.father || '') === (st.father || '');
                     });
                     if (dup) { skipped++; return; }
-                    base.push({ id: genId(), name: st.name, family: st.family, father: st.father, codemelli: st.codemelli, fatherPhone: '', motherPhone: '', shadPhone: '' });
+                    base.push({ id: genId(), name: st.name, family: st.family, father: st.father, codemelli: st.codemelli });
                     added++;
                 });
                 cls.students = base;
@@ -4730,10 +5650,10 @@
             var percent = totalStudents > 0 ? Math.round((done / totalStudents) * 100) : 0;
 
             html += '<div class="hw-card" data-hw-id="' + h.id + '">';
-            html += '<button class="hw-card-delete" data-delete-hw="' + h.id + '" title="حذف">🗑️</button>';
             html += '<div class="hw-card-header">';
             html += '<div class="hw-card-title">📝 ' + escapeHtml(h.title) + '</div>';
             if (h.subject) html += '<span class="hw-card-subject">' + escapeHtml(h.subject) + '</span>';
+            html += '<button class="hw-card-delete" data-delete-hw="' + h.id + '" title="حذف تکلیف" aria-label="حذف تکلیف">✕</button>';
             html += '</div>';
             if (h.description) {
                 html += '<div class="hw-card-desc">' + escapeHtml(h.description) + '</div>';
@@ -5932,11 +6852,9 @@
         // حافظه
         var totalSize = 0;
         try {
-            for (var key in localStorage) {
-                if (localStorage.hasOwnProperty(key) && key.indexOf('cm_') === 0) {
-                    totalSize += (localStorage[key] || '').length;
-                }
-            }
+            localStorage.keys().forEach(function(key) {
+                totalSize += (localStorage.getItem(key) || '').length;
+            });
         } catch(e2) {}
         var sizeKB = Math.round(totalSize / 1024);
         var percent = Math.min(100, Math.round((totalSize / (5 * 1024 * 1024)) * 100));
@@ -6141,10 +7059,7 @@
 
         var keysToRemove = [];
         try {
-            for (var ki = 0; ki < localStorage.length; ki++) {
-                var kk = localStorage.key(ki);
-                if (kk && kk.indexOf('cm_') === 0) keysToRemove.push(kk);
-            }
+            keysToRemove = localStorage.keys();
         } catch(e) {}
         keysToRemove.forEach(function(k) {
             try { localStorage.removeItem(k); } catch(e) {}
@@ -6215,6 +7130,156 @@
     if (setYearSel) setYearSel.addEventListener('change', function() { switchAcademicYear(this.value); });
     var btnNewYear = document.getElementById('btnNewYear');
     if (btnNewYear) btnNewYear.addEventListener('click', createAcademicYear);
+
+    /* ═══════════════════════════════════════════════════
+       👤 حساب کاربری (تنظیمات)
+       ═══════════════════════════════════════════════════ */
+    (function() {
+        var u = CMAuth.user();
+        var lbl = document.getElementById('accUserLabel');
+        if (u && lbl) {
+            var c = u.code;
+            lbl.textContent = (u.name ? u.name + ' — ' : '') + 'نام کاربری: ' + c.slice(0, 3) + '●●●●' + c.slice(-3);
+        }
+        var tl = document.getElementById('topUserBtn');
+        if (tl && u) tl.title = 'خروج از حساب' + (u.name ? ' (' + u.name + ')' : '');
+        function out() { if (confirm('از حساب خارج می‌شوید؟ (داده‌ها حفظ می‌شود)')) CMAuth.logout(); }
+        if (tl) tl.addEventListener('click', out);
+        var lo = document.getElementById('btnAccLogout'); if (lo) lo.addEventListener('click', out);
+        var cp = document.getElementById('btnAccChangePw');
+        if (cp) cp.addEventListener('click', function() {
+            var o = document.getElementById('accOldPw').value, n = document.getElementById('accNewPw').value, n2 = document.getElementById('accNewPw2').value;
+            if (n.length < 6) { alert('❌ رمز جدید باید حداقل ۶ کاراکتر باشد.'); return; }
+            if (n !== n2) { alert('❌ تکرار رمز جدید یکسان نیست.'); return; }
+            CMAuth.changePassword(o, n).then(function() {
+                ['accOldPw', 'accNewPw', 'accNewPw2'].forEach(function(id) { document.getElementById(id).value = ''; });
+                alert('✅ رمز عبور تغییر کرد.');
+            }, function(e) { alert('❌ ' + e.message); });
+        });
+    })();
+
+    /* ═══════════════════════════════════════════════════
+       🔄 به‌روزرسانی از GitHub
+       ═══════════════════════════════════════════════════ */
+    var APP_VERSION = '4.0.0';
+    var realLS = window.localStorage, UPD_KEY = 'cmupd_v1';
+    var pendingUpdate = null;
+
+    function updCfg() {
+        var c = { repo: '', branch: 'main' };
+        try { var j = JSON.parse(realLS.getItem(UPD_KEY) || '{}'); if (j.repo) c.repo = j.repo; if (j.branch) c.branch = j.branch; } catch(e) {}
+        return c;
+    }
+    function verCmp(a, b) {
+        var x = String(a).split('.').map(Number), y = String(b).split('.').map(Number);
+        for (var i = 0; i < 3; i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d > 0 ? 1 : -1; }
+        return 0;
+    }
+    function updMsg(html, kind) {
+        var el = document.getElementById('updStatus'); if (!el) return;
+        el.innerHTML = html;
+        el.style.color = kind === 'bad' ? '#dc2626' : kind === 'ok' ? '#059669' : 'var(--text-muted)';
+    }
+    function readUpdInputs() {
+        var repo = document.getElementById('updRepo').value.trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, '');
+        var branch = document.getElementById('updBranch').value.trim() || 'main';
+        if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) throw new Error('آدرس مخزن را به شکل «نام‌کاربری/نام‌مخزن» وارد کنید (مثل ali/class-manager).');
+        if (!/^[\w.\/-]+$/.test(branch) || branch.indexOf('..') >= 0) throw new Error('نام شاخه معتبر نیست.');
+        try { realLS.setItem(UPD_KEY, JSON.stringify({ repo: repo, branch: branch })); } catch(e) {}
+        return { repo: repo, branch: branch };
+    }
+    function rawUrl(cfg, path) {
+        return 'https://raw.githubusercontent.com/' + cfg.repo + '/' + encodeURI(cfg.branch) + '/' + path;
+    }
+    function checkUpdate() {
+        var btnI = document.getElementById('btnUpdInstall'); btnI.style.display = 'none'; pendingUpdate = null;
+        var cfg;
+        try { cfg = readUpdInputs(); } catch(e) { updMsg('❌ ' + e.message, 'bad'); return; }
+        if (!navigator.onLine) { updMsg('❌ اینترنت قطع است.', 'bad'); return; }
+        updMsg('⏳ در حال بررسی GitHub...');
+        fetch(rawUrl(cfg, 'version.json') + '?t=' + Date.now(), { cache: 'no-store' }).then(function(r) {
+            if (r.status === 404) throw new Error('فایل version.json در این مخزن/شاخه پیدا نشد. نام مخزن و شاخه را بررسی کنید و مطمئن شوید مخزن عمومی (Public) است.');
+            if (!r.ok) throw new Error('پاسخ GitHub: ' + r.status);
+            return r.json();
+        }).then(function(j) {
+            if (!j || j.app !== 'class-manager' || !/^\d+(\.\d+){0,2}$/.test(String(j.version))) throw new Error('این مخزن نسخهٔ معتبری از برنامه ندارد.');
+            var files = (Array.isArray(j.files) && j.files.length ? j.files : ['index.html', 'sw.js', 'manifest.json']).filter(function(f) {
+                return typeof f === 'string' && /^[\w.\-\/]+$/.test(f) && f.indexOf('..') < 0 && f.charAt(0) !== '/';
+            });
+            if (files.indexOf('index.html') < 0) throw new Error('فهرست فایل‌های نسخه ناقص است.');
+            if (verCmp(j.version, APP_VERSION) <= 0) { updMsg('✅ نسخهٔ شما (' + escapeHtml(APP_VERSION) + ') به‌روز است.', 'ok'); return; }
+            pendingUpdate = { cfg: cfg, version: String(j.version), files: files };
+            var notes = Array.isArray(j.notes) ? j.notes : (j.notes ? [String(j.notes)] : []);
+            updMsg('🎉 نسخهٔ جدید <b>' + escapeHtml(j.version) + '</b> آماده است (نسخهٔ شما: ' + escapeHtml(APP_VERSION) + ').' +
+                (notes.length ? '<ul style="margin:6px 18px 0;padding:0;line-height:1.9;">' + notes.map(function(n) { return '<li>' + escapeHtml(String(n)) + '</li>'; }).join('') + '</ul>' : ''), 'ok');
+            btnI.style.display = '';
+        }).catch(function(e) {
+            updMsg('❌ ' + (e && e.message ? (e.name === 'TypeError' ? 'اتصال به GitHub برقرار نشد.' : e.message) : 'خطا'), 'bad');
+        });
+    }
+    function mimeOf(p) {
+        if (/\.html?$/i.test(p)) return 'text/html; charset=utf-8';
+        if (/\.js$/i.test(p)) return 'text/javascript; charset=utf-8';
+        if (/\.json$/i.test(p)) return 'application/json; charset=utf-8';
+        if (/\.png$/i.test(p)) return 'image/png';
+        if (/\.jpe?g$/i.test(p)) return 'image/jpeg';
+        if (/\.svg$/i.test(p)) return 'image/svg+xml';
+        if (/\.css$/i.test(p)) return 'text/css; charset=utf-8';
+        if (/\.xlsx$/i.test(p)) return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        return 'application/octet-stream';
+    }
+    function installUpdate() {
+        if (!pendingUpdate) return;
+        if (!('caches' in window)) { updMsg('❌ این مرورگر ذخیره‌سازی آفلاین ندارد؛ به‌روزرسانی خودکار ممکن نیست.', 'bad'); return; }
+        if (!confirm('نسخهٔ ' + pendingUpdate.version + ' دریافت و نصب شود؟ اطلاعات شما حفظ می‌شود.')) return;
+        var pu = pendingUpdate, btn = document.getElementById('btnUpdInstall'), got = [];
+        btn.disabled = true;
+        var chain = Promise.resolve();
+        pu.files.forEach(function(f, i) {
+            chain = chain.then(function() {
+                updMsg('⏳ دریافت فایل‌ها (' + toPersianNum(i + 1) + ' از ' + toPersianNum(pu.files.length) + ')...');
+                return fetch(rawUrl(pu.cfg, f) + '?t=' + Date.now(), { cache: 'no-store' }).then(function(r) {
+                    if (!r.ok) throw new Error('دریافت «' + f + '» ناموفق بود (' + r.status + ').');
+                    return r.arrayBuffer();
+                }).then(function(buf) { got.push({ path: f, buf: buf }); });
+            });
+        });
+        chain.then(function() {
+            var idx = got.filter(function(g) { return g.path === 'index.html'; })[0];
+            var html = new TextDecoder('utf-8').decode(idx.buf);
+            if (idx.buf.byteLength < 50000 || html.indexOf('name="cm-app"') < 0 || html.indexOf('<!DOCTYPE') !== 0) throw new Error('فایل index.html دریافت‌شده معتبر نیست؛ به‌روزرسانی لغو شد و برنامهٔ فعلی دست‌نخورده ماند.');
+            var sw = got.filter(function(g) { return g.path === 'sw.js'; })[0];
+            if (sw && new TextDecoder('utf-8').decode(sw.buf).indexOf('CACHE_NAME') < 0) throw new Error('فایل sw.js دریافت‌شده معتبر نیست.');
+            return caches.keys().then(function(names) {
+                var mine = names.filter(function(n) { return n.indexOf('class-manager-') === 0; }).sort();
+                return caches.open(mine.length ? mine[mine.length - 1] : 'class-manager-update');
+            });
+        }).then(function(cache) {
+            var base = new URL('./', location.href).href, ops = [];
+            got.forEach(function(g) {
+                var mk = function() { return new Response(g.buf.slice(0), { status: 200, headers: { 'Content-Type': mimeOf(g.path) } }); };
+                ops.push(cache.put(base + g.path, mk()));
+                if (g.path === 'index.html') ops.push(cache.put(base, mk()));
+            });
+            return Promise.all(ops);
+        }).then(function() {
+            updMsg('✅ نسخهٔ ' + escapeHtml(pu.version) + ' نصب شد. در حال بازشدن مجدد...', 'ok');
+            var p = (navigator.serviceWorker && navigator.serviceWorker.getRegistration) ? navigator.serviceWorker.getRegistration().then(function(r) { return r && r.update(); }).catch(function() {}) : Promise.resolve();
+            return p.then(function() { setTimeout(function() { location.reload(); }, 900); });
+        }).catch(function(e) {
+            btn.disabled = false;
+            updMsg('❌ ' + (e && e.message ? e.message : 'خطا در به‌روزرسانی'), 'bad');
+        });
+    }
+    (function() {
+        var fa = function(t) { return String(t).replace(/\d/g, function(d) { return '۰۱۲۳۴۵۶۷۸۹'.charAt(d); }); };
+        var vl = document.getElementById('updCurrent'); if (vl) vl.textContent = fa(APP_VERSION);
+        var fl = document.getElementById('appVersionLabel'); if (fl) fl.textContent = fa(APP_VERSION);
+        var c = updCfg(), r = document.getElementById('updRepo'), b = document.getElementById('updBranch');
+        if (r) r.value = c.repo; if (b) b.value = c.branch;
+        var bc = document.getElementById('btnUpdCheck'); if (bc) bc.addEventListener('click', checkUpdate);
+        var bi = document.getElementById('btnUpdInstall'); if (bi) bi.addEventListener('click', installUpdate);
+    })();
 
     /* ═══════════════════════════════════════════════════
        📱 PWA (Progressive Web App)
