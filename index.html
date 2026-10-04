@@ -154,7 +154,7 @@
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     .modal-overlay {
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
         background: rgba(0,0,0,0.5); display: none;
         align-items: center; justify-content: center;
         z-index: 1000; padding: 20px; box-sizing: border-box;
@@ -1098,6 +1098,21 @@
         .topbar-title > span:first-child { display: none; }
         .year-select { max-width: 92px; }
     }
+
+    /* تقویم شمسی */
+    .jcal { max-width: 340px; padding: 16px; }
+    .jcal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .jcal-title { font-weight: 800; font-size: 16px; color: var(--text); }
+    .jcal-nav { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 22px; line-height: 1; cursor: pointer; }
+    .jcal-nav:hover { background: var(--primary-light); }
+    .jcal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+    .jcal-wd span { font-size: 12px; font-weight: 700; color: var(--text-muted); padding: 4px 0; }
+    .jcal-wd span.fri, .jcal-d.fri { color: #dc2626; }
+    .jcal-d { aspect-ratio: 1; border: 0; border-radius: 10px; background: none; color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer; }
+    .jcal-d:hover { background: var(--primary-light); }
+    .jcal-d.today { box-shadow: inset 0 0 0 2px var(--primary); }
+    .jcal-d.sel { background: var(--primary); color: #fff; box-shadow: none; }
+    .jcal-foot { display: flex; justify-content: space-between; margin-top: 12px; }
 </style>
 </head>
 <body>
@@ -1351,8 +1366,7 @@
                     <input type="text" id="studentSearch" placeholder="جستجو در نام، نام پدر، کد ملی...">
                     <button class="search-bar-clear" id="searchClear" title="پاک کردن">✕</button>
                 </div>
-                <select class="sort-select" id="studentSort">
-                    <option value="default">مرتب‌سازی: پیش‌فرض</option>
+                <select class="sort-select" id="studentSort" title="ترتیب لیست (شمارهٔ دانش‌آموزان هم همین‌طور مرتب می‌شود)">
                     <option value="family_asc">نام خانوادگی (الف → ی)</option>
                     <option value="family_desc">نام خانوادگی (ی → الف)</option>
                     <option value="name_asc">نام (الف → ی)</option>
@@ -1566,10 +1580,10 @@
                     <select class="form-select" id="hwSubjectFilter" style="max-width:180px;">
                         <option value="">همهٔ درس‌ها</option>
                     </select>
-                    <label class="form-label" style="margin:0;">از تاریخ:</label>
-                    <input type="text" class="form-input" id="hwFromDate" style="max-width:130px;" placeholder="1404/07/01">
-                    <label class="form-label" style="margin:0;">تا:</label>
-                    <input type="text" class="form-input" id="hwToDate" style="max-width:130px;" placeholder="1404/09/30">
+                    <label class="form-label" style="margin:0;">از ماه:</label>
+                    <select class="form-select" id="hwFromDate" style="max-width:120px;"></select>
+                    <label class="form-label" style="margin:0;">تا ماه:</label>
+                    <select class="form-select" id="hwToDate" style="max-width:120px;"></select>
                     <button class="btn btn-outline btn-sm" id="btnHwResetFilter">🔄 پاک کردن</button>
                 </div>
 
@@ -1700,17 +1714,9 @@
                     <div class="settings-card-title">🔄 به‌روزرسانی برنامه</div>
                     <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.8;">
                         نسخهٔ فعلی: <b id="updCurrent"></b><br>
-                        نسخهٔ جدید از مخزن GitHub دریافت می‌شود. اطلاعات شما دست‌نخورده می‌ماند.
+                        با زدن دکمه، وجود نسخهٔ جدید بررسی می‌شود و در صورت وجود می‌توانید آن را نصب کنید. اطلاعات شما دست‌نخورده می‌ماند.
                     </p>
-                    <div class="form-group">
-                        <label class="form-label">مخزن GitHub</label>
-                        <input type="text" class="form-input" id="updRepo" placeholder="username/repository" style="direction:ltr;">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">شاخه</label>
-                        <input type="text" class="form-input" id="updBranch" placeholder="main" style="direction:ltr;">
-                    </div>
-                    <button class="btn btn-primary" id="btnUpdCheck" style="width:100%;margin-bottom:8px;">🔄 بررسی و دریافت به‌روزرسانی</button>
+                    <button class="btn btn-primary" id="btnUpdCheck" style="width:100%;margin-bottom:8px;">🔄 بررسی به‌روزرسانی</button>
                     <button class="btn btn-success" id="btnUpdInstall" style="width:100%;display:none;">⬇️ دریافت و نصب نسخهٔ جدید</button>
                     <div id="updStatus" style="font-size:13px;margin-top:10px;line-height:1.8;"></div>
                 </div>
@@ -1813,6 +1819,7 @@
                             <option value="small">کوچک</option>
                             <option value="normal" selected>عادی</option>
                             <option value="large">بزرگ</option>
+                            <option value="xlarge">خیلی بزرگ</option>
                         </select>
                     </div>
                 </div>
@@ -1833,7 +1840,7 @@
             </div>
 
             <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;padding:16px;border-top:1px dashed var(--border);">
-                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۰.۱</span><br>
+                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۱.۰</span><br>
                 🎨 طراح: یوسف معصومی
             </div>
         </div>
@@ -2091,7 +2098,8 @@
             </div>
             <div class="form-group">
                 <label class="form-label">تاریخ تحویل *</label>
-                <input type="text" class="form-input" id="hwDueDate" placeholder="1404/07/20">
+                <input type="text" class="form-input" id="hwDueDate" placeholder="انتخاب از تقویم 📅" readonly style="cursor:pointer;direction:ltr;text-align:right;">
+                <div id="hwDueDateText" style="font-size:12px;color:var(--text-muted);margin-top:4px;min-height:16px;"></div>
             </div>
         </div>
 
@@ -3218,6 +3226,22 @@ var CMPDF = (function(){
     var currentClassIndex = -1;
     var searchQuery = '';
     var sortMode = 'default';
+    function studentCmp(mode) {
+        var fa = function(a, b) { return String(a || '').localeCompare(String(b || ''), 'fa'); };
+        return function(a, b) {
+            switch (mode) {
+                case 'family_desc': return fa(b.family, a.family) || fa(b.name, a.name);
+                case 'name_asc': return fa(a.name, b.name) || fa(a.family, b.family);
+                case 'code_asc': return String(a.codemelli || '').localeCompare(String(b.codemelli || ''));
+                case 'code_desc': return String(b.codemelli || '').localeCompare(String(a.codemelli || ''));
+                default: return fa(a.family, b.family) || fa(a.name, b.name) || fa(a.father, b.father);
+            }
+        };
+    }
+    // ترتیب واقعی لیست کلاس (شمارهٔ ردیف در همهٔ بخش‌ها از همین ترتیب می‌آید)
+    function sortClassStudents(cls) {
+        if (cls && cls.students) cls.students.sort(studentCmp(cls.order || 'family_asc'));
+    }
 
     function refreshClassDropdown() {
         var select = document.getElementById('studentClassSelect');
@@ -3273,6 +3297,8 @@ var CMPDF = (function(){
 
         var cls = appData.classes[currentClassIndex];
         var allStudents = cls.students || [];
+        var sSortEl = document.getElementById('studentSort');
+        if (sSortEl) sSortEl.value = cls.order || 'family_asc';
 
         if (allStudents.length === 0) {
             container.innerHTML =
@@ -3292,26 +3318,6 @@ var CMPDF = (function(){
             var haystack = [s.name, s.family, s.codemelli, s.father].join(' ').toLowerCase();
             return haystack.indexOf(q) !== -1;
         });
-
-        if (sortMode !== 'default') {
-            filtered.sort(function(a, b) {
-                var fa, fb;
-                switch (sortMode) {
-                    case 'family_asc':
-                        fa = (a.family || '').localeCompare(b.family || '', 'fa');
-                        fb = (a.name || '').localeCompare(b.name || '', 'fa');
-                        return fa !== 0 ? fa : fb;
-                    case 'family_desc':
-                        fa = (b.family || '').localeCompare(a.family || '', 'fa');
-                        fb = (b.name || '').localeCompare(a.name || '', 'fa');
-                        return fa !== 0 ? fa : fb;
-                    case 'name_asc': return (a.name || '').localeCompare(b.name || '', 'fa');
-                    case 'code_asc': return String(a.codemelli || '').localeCompare(String(b.codemelli || ''));
-                    case 'code_desc': return String(b.codemelli || '').localeCompare(String(a.codemelli || ''));
-                    default: return 0;
-                }
-            });
-        }
 
         if (filtered.length === 0) {
             container.innerHTML =
@@ -3436,6 +3442,7 @@ var CMPDF = (function(){
             if (!cls.students) cls.students = [];
             cls.students.push(data);
         }
+        sortClassStudents(cls);
 
         saveData();
         renderStudents();
@@ -3476,7 +3483,11 @@ var CMPDF = (function(){
     }
     if (sortSelect) {
         sortSelect.addEventListener('change', function() {
-            sortMode = this.value;
+            var c = appData.classes[currentClassIndex];
+            if (!c) return;
+            c.order = this.value;
+            sortClassStudents(c);
+            saveData();
             renderStudents();
         });
     }
@@ -3947,7 +3958,7 @@ var CMPDF = (function(){
             if (dup) { skipped++; return; }
             st.id = genId(); base.push(st); added++;
         });
-        cls.students = base;
+        cls.students = base; sortClassStudents(cls);
         saveData(); renderClasses(); closeModal('modalPdf'); selectClassInStudentPage(idx);
         alert('✅ ' + toPersianNum(added) + ' دانش‌آموز وارد شد.' + (skipped ? '\n' + toPersianNum(skipped) + ' مورد تکراری نادیده گرفته شد.' : ''));
     });
@@ -4000,7 +4011,7 @@ var CMPDF = (function(){
                     base.push({ id: genId(), name: st.name, family: st.family, father: st.father, codemelli: st.codemelli });
                     added++;
                 });
-                cls.students = base;
+                cls.students = base; sortClassStudents(cls);
                 saveData();
                 renderClasses();
                 closeModal('modalExcel');
@@ -4293,6 +4304,33 @@ var CMPDF = (function(){
 
     document.getElementById('btnAttReport').addEventListener('click', function() { showMonthlyReport(); });
 
+    function printAttMonthly(cls, monthPrefix, days, stats) {
+        var students = cls.students || [], n = students.length;
+        var fs = n > 45 ? 8 : n > 35 ? 9 : n > 28 ? 10 : n > 20 ? 11 : 12, pad = n > 45 ? 1.5 : n > 35 ? 2.5 : n > 28 ? 3.5 : 5;
+        var html = '<html><head><meta charset="UTF-8"><title>گزارش ماهانهٔ حضور و غیاب</title><style>';
+        html += '@page { size: A4 portrait; margin: 0.7cm 0.8cm 0.3cm 0.8cm; }';
+        html += 'body { font-family: "Vazirmatn", "B Nazanin", "Tahoma", sans-serif; direction: rtl; margin: 0; }';
+        html += '.h { text-align: center; font-weight: bold; font-size: 15pt; padding: 4px 0 8px 0; border-bottom: 1.5px solid #000; margin-bottom: 8px; }';
+        html += '.sub { text-align: center; font-size: 11pt; margin-bottom: 8px; }';
+        html += '.days { text-align: center; font-size: 9.5pt; margin-bottom: 8px; color: #333; }';
+        html += 'table { border-collapse: collapse; width: 100%; font-size: ' + fs + 'pt; }';
+        html += 'th, td { border: 1px solid #000; text-align: center; padding: ' + pad + 'px 3px; }';
+        html += 'th { background: #e8e8e8; } td.name { text-align: right; padding-right: 6px; font-weight: 600; }';
+        html += '</style></head><body>';
+        html += '<div class="h">گزارش ماهانهٔ حضور و غیاب - کلاس ' + escapeHtml(cls.className) + '</div>';
+        html += yearLine();
+        html += '<div class="sub">ماه: ' + monthName(monthPrefix.substring(5, 7)) + ' ' + toPersianNum(parseInt(monthPrefix.substring(0, 4), 10)) + ' &nbsp; | &nbsp; تعداد روزهای ثبت‌شده: ' + toPersianNum(days.length) + '</div>';
+        html += '<div class="days">روزها: ' + days.map(function(d) { return toPersianNum(parseInt(d, 10)); }).join('، ') + '</div>';
+        html += '<table><thead><tr><th style="width:30px;">#</th><th style="width:90px;">کد ملی</th><th>نام و نام خانوادگی</th><th>حاضر</th><th>غایب موجه</th><th>غایب غیرموجه</th><th>تأخیر</th></tr></thead><tbody>';
+        students.forEach(function(s, i) {
+            var st = stats[s.id] || newAttStats();
+            html += '<tr><td>' + toPersianNum(i + 1) + '</td><td>' + escapeHtml(s.codemelli || '') + '</td><td class="name">' + escapeHtml((s.family || '') + ' ' + (s.name || '')) + '</td>' +
+                '<td>' + toPersianNum(st.present) + '</td><td>' + toPersianNum(st.absentJ) + '</td><td>' + toPersianNum(st.absentU) + '</td><td>' + toPersianNum(st.late) + '</td></tr>';
+        });
+        html += '</tbody></table></body></html>';
+        openPrintWindow(html);
+    }
+
     function showMonthlyReport() {
         var cls = appData.classes[attCurrentClass];
         if (!cls || !attCurrentDate) { alert('❌ ابتدا کلاس و تاریخ را انتخاب کنید.'); return; }
@@ -4365,11 +4403,14 @@ var CMPDF = (function(){
                     : ''
                 ) +
                 '<div class="modal-actions">' +
+                    (days.length > 0 ? '<button class="btn btn-success" id="printAttMonthly">🖨️ چاپ گزارش</button>' : '') +
                     '<button class="btn btn-outline" id="closeReportModal">بستن</button>' +
                 '</div>' +
             '</div>';
 
         document.body.appendChild(modal);
+        var pbtn = document.getElementById('printAttMonthly');
+        if (pbtn) pbtn.addEventListener('click', function() { printAttMonthly(cls, monthPrefix, days, studentStats); });
         modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
         document.getElementById('closeReportModal').addEventListener('click', function() { modal.remove(); });
     }
@@ -5635,10 +5676,12 @@ var CMPDF = (function(){
         if (toolbar) toolbar.style.display = 'flex';
 
         var allHw = getClassHomeworks(cls);
+        var hwRk = monthRangeKeys(hwFilterFrom, hwFilterTo);
         var filtered = allHw.filter(function(h) {
             if (hwFilterSubject && h.subject !== hwFilterSubject) return false;
-            if (hwFilterFrom && h.dueDate < hwFilterFrom) return false;
-            if (hwFilterTo && h.dueDate > hwFilterTo) return false;
+            var hm = String(h.dueDate || '').substring(0, 7);
+            if (hwRk.from && hm < hwRk.from) return false;
+            if (hwRk.to && hm > hwRk.to) return false;
             return true;
         });
 
@@ -5885,6 +5928,68 @@ var CMPDF = (function(){
         closeModal('modalHomework');
     });
 
+    /* ═══════════════════════════════════════════════════
+       📅 انتخابگر تقویم شمسی
+       ═══════════════════════════════════════════════════ */
+    function jalaliMonthLen(jy, jm) {
+        if (jm <= 6) return 31;
+        if (jm <= 11) return 30;
+        try { var s = dateToJalaliStr(jalaliStrToDate(jy + '/12/30')); return s.indexOf(jy + '/12/30') === 0 ? 30 : 29; } catch(e) { return 29; }
+    }
+    function openJalaliPicker(initial, onPick) {
+        var today = getTodayJalaliStr();
+        var base = /^\d{4}\/\d{2}\/\d{2}$/.test(initial || '') ? initial : today;
+        var vy = parseInt(base.substr(0, 4), 10), vm = parseInt(base.substr(5, 2), 10);
+        var selected = /^\d{4}\/\d{2}\/\d{2}$/.test(initial || '') ? initial : '';
+        var ov = document.createElement('div');
+        ov.className = 'modal-overlay open';
+        ov.style.zIndex = '3000';
+        ov.innerHTML = '<div class="modal jcal"><div class="jcal-head"><button type="button" class="jcal-nav" data-n="-1" aria-label="ماه قبل">›</button>' +
+            '<div class="jcal-title"></div><button type="button" class="jcal-nav" data-n="1" aria-label="ماه بعد">‹</button></div>' +
+            '<div class="jcal-grid jcal-wd"></div><div class="jcal-grid jcal-days"></div>' +
+            '<div class="jcal-foot"><button type="button" class="btn btn-outline btn-sm" data-act="today">امروز</button>' +
+            '<button type="button" class="btn btn-outline btn-sm" data-act="close">بستن</button></div></div>';
+        document.body.appendChild(ov);
+        var wd = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
+        ov.querySelector('.jcal-wd').innerHTML = wd.map(function(w, i) { return '<span class="' + (i === 6 ? 'fri' : '') + '">' + w + '</span>'; }).join('');
+        function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
+        function pick(s) { close(); onPick(s); }
+        function draw() {
+            ov.querySelector('.jcal-title').textContent = monthName(vm) + ' ' + toPersianNum(vy);
+            var first = jalaliStrToDate(vy + '/' + pad2(vm) + '/01');
+            var off = (first.getDay() + 1) % 7, len = jalaliMonthLen(vy, vm), h = '', i;
+            for (i = 0; i < off; i++) h += '<span></span>';
+            for (i = 1; i <= len; i++) {
+                var s = vy + '/' + pad2(vm) + '/' + pad2(i), col = (off + i - 1) % 7;
+                h += '<button type="button" class="jcal-d' + (s === selected ? ' sel' : '') + (s === today ? ' today' : '') + (col === 6 ? ' fri' : '') + '" data-d="' + s + '">' + toPersianNum(i) + '</button>';
+            }
+            ov.querySelector('.jcal-days').innerHTML = h;
+        }
+        ov.addEventListener('click', function(e) {
+            var t = e.target;
+            if (t === ov) { close(); return; }
+            var n = t.getAttribute && t.getAttribute('data-n');
+            if (n) { vm += parseInt(n, 10); if (vm > 12) { vm = 1; vy++; } if (vm < 1) { vm = 12; vy--; } draw(); return; }
+            var d = t.getAttribute && t.getAttribute('data-d');
+            if (d) { pick(d); return; }
+            var a = t.getAttribute && t.getAttribute('data-act');
+            if (a === 'close') close();
+            if (a === 'today') pick(today);
+        });
+        draw();
+    }
+
+    (function() {
+        var di = document.getElementById('hwDueDate'), dt = document.getElementById('hwDueDateText');
+        if (!di) return;
+        function upd() { if (dt) dt.textContent = di.value ? describeJalaliDate(di.value) : ''; }
+        function open() { openJalaliPicker(di.value, function(v) { di.value = v; upd(); }); }
+        di.addEventListener('click', open);
+        di.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+        var btn = document.getElementById('btnAddHomework');
+        if (btn) btn.addEventListener('click', function() { setTimeout(upd, 0); });
+    })();
+
     // ═══ رویدادهای صفحه ═══
     var hwClassSel = document.getElementById('hwClassSelect');
     var hwSubjectFilter = document.getElementById('hwSubjectFilter');
@@ -5915,19 +6020,15 @@ var CMPDF = (function(){
         });
     }
 
-    if (hwFromDate) {
-        hwFromDate.addEventListener('change', function() {
-            var n = normalizeDate(this.value);
-            if (n || this.value === '') { this.value = n; hwFilterFrom = n; renderHomeworkList(); }
+    function fillHwMonthSelects() {
+        [[hwFromDate, 'از ابتدا'], [hwToDate, 'تا انتها']].forEach(function(p) {
+            if (!p[0]) return;
+            p[0].innerHTML = '<option value="">' + p[1] + '</option>' + SCHOOL_MONTHS.map(function(m) { return '<option value="' + m + '">' + monthName(m) + '</option>'; }).join('');
         });
     }
-
-    if (hwToDate) {
-        hwToDate.addEventListener('change', function() {
-            var n = normalizeDate(this.value);
-            if (n || this.value === '') { this.value = n; hwFilterTo = n; renderHomeworkList(); }
-        });
-    }
+    fillHwMonthSelects();
+    if (hwFromDate) hwFromDate.addEventListener('change', function() { hwFilterFrom = this.value; renderHomeworkList(); });
+    if (hwToDate) hwToDate.addEventListener('change', function() { hwFilterTo = this.value; renderHomeworkList(); });
 
     document.getElementById('btnHwResetFilter').addEventListener('click', function() {
         if (hwSubjectFilter) hwSubjectFilter.value = '';
@@ -6906,10 +7007,10 @@ var CMPDF = (function(){
     }
 
     function applyFontSize(size) {
-        var base = 14;
-        if (size === 'small') base = 12;
-        else if (size === 'large') base = 16;
-        document.documentElement.style.fontSize = (base / 14 * 100) + '%';
+        var z = { small: 0.9, normal: 1, large: 1.15, xlarge: 1.35 }[size] || 1;
+        if (window.innerWidth < 600 && z > 1) z = z >= 1.3 ? 1.2 : 1.1; // روی موبایل کمتر بزرگ شود تا صفحه جا بماند
+        document.documentElement.style.fontSize = '';
+        document.body.style.zoom = z === 1 ? '' : String(z);
     }
 
     // ===== حالت شب (از تنظیمات) =====
@@ -7177,15 +7278,12 @@ var CMPDF = (function(){
     /* ═══════════════════════════════════════════════════
        🔄 به‌روزرسانی از GitHub
        ═══════════════════════════════════════════════════ */
-    var APP_VERSION = '4.0.1';
+    var APP_VERSION = '4.1.0';
     var realLS = window.localStorage, UPD_KEY = 'cmupd_v1';
     var pendingUpdate = null;
 
-    function updCfg() {
-        var c = { repo: '', branch: 'main' };
-        try { var j = JSON.parse(realLS.getItem(UPD_KEY) || '{}'); if (j.repo) c.repo = j.repo; if (j.branch) c.branch = j.branch; } catch(e) {}
-        return c;
-    }
+    var UPD_REPO = 'ymasoomi68-glitch/management', UPD_BRANCH = 'HEAD';
+    function updCfg() { return { repo: UPD_REPO, branch: UPD_BRANCH }; }
     function verCmp(a, b) {
         var x = String(a).split('.').map(Number), y = String(b).split('.').map(Number);
         for (var i = 0; i < 3; i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d > 0 ? 1 : -1; }
@@ -7196,14 +7294,7 @@ var CMPDF = (function(){
         el.innerHTML = html;
         el.style.color = kind === 'bad' ? '#dc2626' : kind === 'ok' ? '#059669' : 'var(--text-muted)';
     }
-    function readUpdInputs() {
-        var repo = document.getElementById('updRepo').value.trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, '');
-        var branch = document.getElementById('updBranch').value.trim() || 'main';
-        if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) throw new Error('آدرس مخزن را به شکل «نام‌کاربری/نام‌مخزن» وارد کنید (مثل ali/class-manager).');
-        if (!/^[\w.\/-]+$/.test(branch) || branch.indexOf('..') >= 0) throw new Error('نام شاخه معتبر نیست.');
-        try { realLS.setItem(UPD_KEY, JSON.stringify({ repo: repo, branch: branch })); } catch(e) {}
-        return { repo: repo, branch: branch };
-    }
+    function readUpdInputs() { return updCfg(); }
     function rawUrl(cfg, path) {
         return 'https://raw.githubusercontent.com/' + cfg.repo + '/' + encodeURI(cfg.branch) + '/' + path;
     }
@@ -7214,7 +7305,7 @@ var CMPDF = (function(){
         if (!navigator.onLine) { updMsg('❌ اینترنت قطع است.', 'bad'); return; }
         updMsg('⏳ در حال بررسی GitHub...');
         fetch(rawUrl(cfg, 'version.json') + '?t=' + Date.now(), { cache: 'no-store' }).then(function(r) {
-            if (r.status === 404) throw new Error('فایل version.json در این مخزن/شاخه پیدا نشد. نام مخزن و شاخه را بررسی کنید و مطمئن شوید مخزن عمومی (Public) است.');
+            if (r.status === 404) throw new Error('اطلاعات نسخهٔ جدید پیدا نشد. بعداً دوباره تلاش کنید.');
             if (!r.ok) throw new Error('پاسخ GitHub: ' + r.status);
             return r.json();
         }).then(function(j) {
@@ -7291,8 +7382,6 @@ var CMPDF = (function(){
         var fa = function(t) { return String(t).replace(/\d/g, function(d) { return '۰۱۲۳۴۵۶۷۸۹'.charAt(d); }); };
         var vl = document.getElementById('updCurrent'); if (vl) vl.textContent = fa(APP_VERSION);
         var fl = document.getElementById('appVersionLabel'); if (fl) fl.textContent = fa(APP_VERSION);
-        var c = updCfg(), r = document.getElementById('updRepo'), b = document.getElementById('updBranch');
-        if (r) r.value = c.repo; if (b) b.value = c.branch;
         var bc = document.getElementById('btnUpdCheck'); if (bc) bc.addEventListener('click', checkUpdate);
         var bi = document.getElementById('btnUpdInstall'); if (bi) bi.addEventListener('click', installUpdate);
     })();

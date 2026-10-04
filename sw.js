@@ -2,7 +2,7 @@
    📱 Service Worker - مدیریت کلاسی
    ═══════════════════════════════════════════════════ */
 
-var CACHE_NAME = 'class-manager-v6';
+var CACHE_NAME = 'class-manager-v7';
 var CACHE_FILES = [
     './',
     './index.html',
