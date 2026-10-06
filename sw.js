@@ -2,7 +2,7 @@
    📱 Service Worker - مدیریت کلاسی
    ═══════════════════════════════════════════════════ */
 
-var CACHE_NAME = 'class-manager-v8';
+var CACHE_NAME = 'class-manager-v10';
 var CACHE_FILES = [
     './',
     './index.html',
@@ -51,12 +51,6 @@ self.addEventListener('fetch', function(event) {
 
     // درخواست‌های API سیدا رو کش نکن
     if (event.request.url.indexOf('/api/') !== -1) return;
-
-    var reqUrl = new URL(event.request.url);
-    // درخواست‌های خارج از این سایت (مثل GitHub) را دست نزن
-    if (reqUrl.origin !== self.location.origin) return;
-    // فایل نسخه همیشه از شبکه خوانده شود
-    if (/\/version\.json$/.test(reqUrl.pathname)) return;
 
     var reqUrl = new URL(event.request.url);
     // درخواست‌های خارج از این سایت (مثل GitHub) را دست نزن

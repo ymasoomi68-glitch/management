@@ -1,13 +1,9 @@
 {
   "app": "class-manager",
-  "version": "4.2.0",
+  "version": "4.3.1",
   "notes": [
-    "صفحهٔ اصلی گرافیکی و دکمهٔ برگشت با پیام خروج",
-    "تقویم شمسی در حضور و غیاب، نمرات و رفتار",
-    "فیلتر ماهانهٔ رفتار",
-    "دانلود PDF جداگانهٔ کارنامهٔ همهٔ دانش‌آموزان",
-    "دکمه‌های چاپ و بستن در بالای گزارش ماهانهٔ حضور",
-    "آیکون خروج از حساب"
+    "کارنامه: ریز تکالیف (کامل/ناقص/انجام نداده) برای هر دانش‌آموز",
+    "کارنامه: روزهای غیبت موجه، غیرموجه و تأخیر"
   ],
   "files": [
     "index.html",
@@ -18,5 +14,15 @@
     "icon-maskable-512.png",
     "apple-touch-icon.png",
     "favicon.png"
-  ]
+  ],
+  "sha256": {
+    "index.html": "0d77e464b362ef5996ec4e505c96d7c358fa8e615d2b1fcaae380322c9803814",
+    "sw.js": "9aae7738081a2b1361950edcb665f9105e172a1be2005c4ec590d27057232a02",
+    "manifest.json": "7192c5a474b9e67dbb1ead2e969f8c3dcc498d0a9508711f15ca0c7dfd885a9b",
+    "icon-192.png": "5b7aa6b361f6010778c52d57e94485a4de7150b154e7b8f77e9ba89769df900c",
+    "icon-512.png": "16f5b5c73f213684e58b97897ae10b1884cf0b3b16593ac43715fca3e58d9fc8",
+    "icon-maskable-512.png": "a4d8b2975b71af28c7cb8ceab4dbe1b4761fec2ec02f832c8786c96d44b616ea",
+    "apple-touch-icon.png": "3c3a3374e1b3d64d67cd80d549cc1f982e0fc8fc82490e90682e62d2abb0b1fb",
+    "favicon.png": "640ce9e40efba40694d426caf3caf4f1e4c7a2310f1218c7905b39bf4bc10d50"
+  }
 }
