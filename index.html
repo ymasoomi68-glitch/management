@@ -1918,7 +1918,7 @@
             </div>
 
             <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;padding:16px;border-top:1px dashed var(--border);">
-                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۰</span><br>
+                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۱</span><br>
                 🎨 طراح: یوسف معصومی
             </div>
         </div>
@@ -6347,7 +6347,8 @@ var CMPDF = (function(){
             // رفتار
             behavior: { positive: 0, negative: 0, count: 0, items: [] },
             // تکالیف
-            homework: { done: 0, notdone: 0, partial: 0, total: 0 }
+            homework: { done: 0, notdone: 0, partial: 0, total: 0, items: [] },
+            attDays: []
         };
 
         // ===== نمرات =====
@@ -6391,7 +6392,9 @@ var CMPDF = (function(){
             var st = attendanceData[key][student.id];
             if (!st) return;
             addAttStat(stats.attendance, st);
+            if (st === 'absent_j' || st === 'absent_u' || st === 'late') stats.attDays.push({ date: date, st: st });
         });
+        stats.attDays.sort(function(a, b) { return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); });
 
         // ===== رفتار =====
         var behaviors = behaviorsData[cls.className] || [];
@@ -6414,7 +6417,9 @@ var CMPDF = (function(){
             if (st === 'done') stats.homework.done++;
             else if (st === 'notdone') stats.homework.notdone++;
             else if (st === 'partial') stats.homework.partial++;
+            stats.homework.items.push({ date: h.dueDate, title: h.title || '', subject: h.subject || '', status: st || '' });
         });
+        stats.homework.items.sort(function(a, b) { return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); });
 
         return stats;
     }
@@ -6607,7 +6612,8 @@ var CMPDF = (function(){
             gradesLevel: { 1: 0, 2: 0, 3: 0, 4: 0 },
             att: newAttStats(),
             behavior: { positive: 0, negative: 0 },
-            homework: { done: 0, notdone: 0, partial: 0, total: 0 }
+            homework: { done: 0, notdone: 0, partial: 0, total: 0, items: [] },
+            attDays: []
         };
 
         students.forEach(function(s) {
@@ -6889,6 +6895,16 @@ var CMPDF = (function(){
         html += '<td style="color:#ef4444;font-weight:bold;">' + stats.attendance.absentU + '</td>';
         html += '<td style="color:#f59e0b;font-weight:bold;">' + stats.attendance.late + '</td>';
         html += '</tr></tbody></table>';
+        if (stats.attDays.length) {
+            var attLbl = { absent_j: ['غایب موجه', '#3b82f6'], absent_u: ['غایب غیرموجه', '#ef4444'], late: ['تأخیر', '#f59e0b'] };
+            html += '<table class="mx" style="margin-top:6px;"><thead><tr><th style="width:26%">وضعیت</th><th>روزها</th></tr></thead><tbody>';
+            ['absent_j', 'absent_u', 'late'].forEach(function(k) {
+                var ds = stats.attDays.filter(function(d) { return d.st === k; }).map(function(d) { return faDigits(d.date); });
+                if (!ds.length) return;
+                html += '<tr><td style="color:' + attLbl[k][1] + ';font-weight:bold;">' + attLbl[k][0] + ' (' + toPersianNum(ds.length) + ')</td><td style="text-align:right;">' + ds.join('، ') + '</td></tr>';
+            });
+            html += '</tbody></table>';
+        }
         html += '</div>';
 
         // رفتار
@@ -6908,6 +6924,13 @@ var CMPDF = (function(){
             html += '<td style="color:#ef4444;font-weight:bold;">' + stats.homework.notdone + '</td>';
             html += '<td style="font-weight:bold;">' + Math.round((stats.homework.done / stats.homework.total) * 100) + '٪</td>';
             html += '</tr></tbody></table>';
+            var hwLbl = { done: ['کامل', '#10b981'], partial: ['ناقص', '#f59e0b'], notdone: ['انجام نداده', '#ef4444'] };
+            html += '<table class="mx" style="margin-top:6px;"><thead><tr><th>تاریخ تحویل</th><th>درس</th><th>تکلیف</th><th>وضعیت</th></tr></thead><tbody>';
+            stats.homework.items.forEach(function(it) {
+                var l = hwLbl[it.status] || ['ثبت نشده', '#666'];
+                html += '<tr><td>' + faDigits(it.date || '') + '</td><td>' + escapeHtml(it.subject) + '</td><td style="text-align:right;">' + escapeHtml(it.title) + '</td><td style="color:' + l[1] + ';font-weight:bold;">' + l[0] + '</td></tr>';
+            });
+            html += '</tbody></table>';
             html += '</div>';
         }
 
@@ -7496,7 +7519,7 @@ var CMPDF = (function(){
     /* ═══════════════════════════════════════════════════
        🔄 به‌روزرسانی از GitHub
        ═══════════════════════════════════════════════════ */
-    var APP_VERSION = '4.3.0';
+    var APP_VERSION = '4.3.1';
     var realLS = window.localStorage, UPD_KEY = 'cmupd_v1';
     var pendingUpdate = null;
 
