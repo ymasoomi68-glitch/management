@@ -1,4 +1,4 @@
-// استفاده: node make-version.js 4.3.0 "یادداشت۱" "یادداشت۲"
+// استفاده: node make-version.js 4.3.1 "یادداشت۱" "یادداشت۲"
 // هش SHA-256 فایل‌های انتشار را حساب و version.json را می‌سازد.
 const fs=require('fs'),c=require('crypto');
 const files=["index.html","sw.js","manifest.json","icon-192.png","icon-512.png","icon-maskable-512.png","apple-touch-icon.png","favicon.png"];
