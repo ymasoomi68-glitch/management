@@ -1918,7 +1918,7 @@
             </div>
 
             <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;padding:16px;border-top:1px dashed var(--border);">
-                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۳</span><br>
+                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۴</span><br>
                 🎨 طراح: یوسف معصومی
             </div>
         </div>
@@ -7519,7 +7519,7 @@ var CMPDF = (function(){
     /* ═══════════════════════════════════════════════════
        🔄 به‌روزرسانی از GitHub
        ═══════════════════════════════════════════════════ */
-    var APP_VERSION = '4.3.3';
+    var APP_VERSION = '4.3.4';
     var realLS = window.localStorage, UPD_KEY = 'cmupd_v1';
     var pendingUpdate = null;
 
@@ -7656,21 +7656,7 @@ var CMPDF = (function(){
         if (t) { t.style.cursor = 'pointer'; t.addEventListener('click', function() { showPage('home'); }); }
     })();
 
-    function askExit(cb) {
-        var ov = document.createElement('div');
-        ov.className = 'modal-overlay open'; ov.style.zIndex = '4000';
-        ov.innerHTML = '<div class="modal exit-box"><div class="exit-ico">🚪</div><h2 class="modal-title" style="border:0;margin-bottom:6px;">خروج از برنامه</h2>' +
-            '<p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">آیا می‌خواهید از برنامه خارج شوید؟</p>' +
-            '<div class="modal-actions" style="justify-content:center;"><button class="btn btn-outline" data-x="0">ماندن</button><button class="btn btn-danger" data-x="1">خروج</button></div></div>';
-        document.body.appendChild(ov);
-        ov.addEventListener('click', function(e) {
-            var x = e.target.getAttribute && e.target.getAttribute('data-x');
-            if (x === null && e.target !== ov) return;
-            ov.remove(); cb(x === '1');
-        });
-        return ov;
-    }
-    var exitAsking = false, exitOv = null, histArmed = false, leaving = false;
+    var histArmed = false;
     // مرورگرهای موبایل ورودی‌های تاریخچه‌ای را که بدون هیچ لمس کاربر ساخته شده‌اند هنگام «برگشت» رد می‌کنند.
     // پس نگهبان تاریخچه را در اولین لمس/کلید کاربر می‌سازیم: [نگهبان، صفحهٔ فعلی]
     function armHistory() {
@@ -7687,21 +7673,18 @@ var CMPDF = (function(){
     }
     ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(function(ev) { document.addEventListener(ev, armHistory, true); });
     function pushCur() { try { history.pushState({ cmPage: currentPageName || 'home' }, ''); } catch(x) {} }
-    function closeExitDialog() { if (exitOv) { exitOv.remove(); exitOv = null; } exitAsking = false; }
-    function doExit() {
-        leaving = true;
-        try { window.close(); } catch(x) {}
-        try { history.go(-2); } catch(x) {}
-        setTimeout(function() { // اگر مرورگر اجازهٔ بستن نداد
-            if (document.visibilityState === 'hidden') return;
-            leaving = false;
-            pushCur();
-            alert('مرورگر اجازهٔ بستن خودکار برنامه را نداد.\nبرای خروج، برنامه را از لیست برنامه‌ها ببندید یا دکمهٔ Home را بزنید.');
-        }, 500);
+    // در صفحهٔ اصلی: اولین «برگشت» برنامه را آمادهٔ خروج می‌کند (بدون هیچ پیام)؛
+    // «برگشتِ» دوم (تا ۳ ثانیه بعد) خودِ مرورگر/برنامه را می‌بندد.
+    var exitPrimed = false, exitTimer = null;
+    function unprime() {
+        if (!exitPrimed) return;
+        exitPrimed = false; clearTimeout(exitTimer);
+        document.removeEventListener('pointerdown', unprime, true);
+        document.removeEventListener('keydown', unprime, true);
+        pushCur();
     }
     window.addEventListener('popstate', function(e) {
-        if (leaving || !histArmed) return;
-        if (exitAsking) { pushCur(); return; } // برگشت وقتی پیام خروج باز است = ماندن
+        if (!histArmed) return;
         var open = document.querySelectorAll('.modal-overlay.open');
         if (open.length) {
             var top = open[open.length - 1];
@@ -7717,12 +7700,12 @@ var CMPDF = (function(){
             pushCur();
             return;
         }
-        exitAsking = true;
-        exitOv = askExit(function(yes) {
-            exitOv = null; exitAsking = false;
-            if (yes) doExit();
-        });
-        pushCur();
+        // صفحهٔ اصلی: ورودی نگهبان را همان‌جا می‌گذاریم؛ برگشتِ بعدی از برنامه خارج می‌شود
+        if (exitPrimed) return;
+        exitPrimed = true;
+        document.addEventListener('pointerdown', unprime, true);
+        document.addEventListener('keydown', unprime, true);
+        exitTimer = setTimeout(unprime, 3000);
     });
 
     /* ═══════════════════════════════════════════════════
