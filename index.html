@@ -1918,7 +1918,7 @@
             </div>
 
             <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;padding:16px;border-top:1px dashed var(--border);">
-                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۲</span><br>
+                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۳</span><br>
                 🎨 طراح: یوسف معصومی
             </div>
         </div>
@@ -7041,7 +7041,7 @@ var CMPDF = (function(){
         if (!students.length) { alert('❌ کلاس دانش‌آموز ندارد.'); return; }
         if (!confirm('کارنامهٔ ' + toPersianNum(students.length) + ' دانش‌آموز، هرکدام در یک فایل PDF جداگانه دانلود شود؟\n(اگر مرورگر پرسید، «دانلود چند فایل» را مجاز کنید.)')) return;
         var ov = document.createElement('div');
-        ov.className = 'modal-overlay open'; ov.style.zIndex = '4000';
+        ov.className = 'modal-overlay open'; ov.style.zIndex = '4000'; ov.setAttribute('data-noback','1');
         ov.innerHTML = '<div class="modal exit-box"><div class="exit-ico">⬇️</div><h2 class="modal-title" style="border:0;margin-bottom:6px;">در حال ساخت کارنامه‌ها</h2>' +
             '<p id="pdfDlMsg" style="font-size:14px;color:var(--text-muted);margin-bottom:12px;"></p><div style="height:8px;border-radius:6px;background:var(--border);overflow:hidden;"><div id="pdfDlBar" style="height:100%;width:0;background:var(--primary);transition:width .2s;"></div></div></div>';
         document.body.appendChild(ov);
@@ -7519,7 +7519,7 @@ var CMPDF = (function(){
     /* ═══════════════════════════════════════════════════
        🔄 به‌روزرسانی از GitHub
        ═══════════════════════════════════════════════════ */
-    var APP_VERSION = '4.3.2';
+    var APP_VERSION = '4.3.3';
     var realLS = window.localStorage, UPD_KEY = 'cmupd_v1';
     var pendingUpdate = null;
 
@@ -7677,7 +7677,13 @@ var CMPDF = (function(){
         if (histArmed) return;
         histArmed = true;
         ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(function(ev) { document.removeEventListener(ev, armHistory, true); });
-        try { history.replaceState({ cmGuard: 1 }, ''); history.pushState({ cmPage: currentPageName || 'home' }, ''); } catch(e) {}
+        try {
+            var hs = history.state || {};
+            // بعد از reload (به‌روزرسانی، ورود، ...) تاریخچهٔ قبلی ما هنوز هست؛ دوباره لایه اضافه نکن
+            if (hs.cmPage) { history.replaceState({ cmPage: currentPageName || 'home' }, ''); }
+            else if (hs.cmGuard) { history.pushState({ cmPage: currentPageName || 'home' }, ''); }
+            else { history.replaceState({ cmGuard: 1 }, ''); history.pushState({ cmPage: currentPageName || 'home' }, ''); }
+        } catch(e) {}
     }
     ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(function(ev) { document.addEventListener(ev, armHistory, true); });
     function pushCur() { try { history.pushState({ cmPage: currentPageName || 'home' }, ''); } catch(x) {} }
@@ -7699,7 +7705,7 @@ var CMPDF = (function(){
         var open = document.querySelectorAll('.modal-overlay.open');
         if (open.length) {
             var top = open[open.length - 1];
-            if (top.id) top.classList.remove('open'); else top.remove();
+            if (top.getAttribute('data-noback') === null) { if (top.id) top.classList.remove('open'); else top.remove(); }
             pushCur(); return;
         }
         var hwDetail = document.getElementById('hwDetailView');

@@ -1,9 +1,9 @@
 {
   "app": "class-manager",
-  "version": "4.3.2",
+  "version": "4.3.3",
   "notes": [
-    "اصلاح دکمهٔ برگشت گوشی: بازگشت مرحله‌به‌مرحله و پرسش خروج در همهٔ حالت‌ها",
-    "اصلاح دکمهٔ «خروج» در پیام خروج"
+    "اصلاح دکمهٔ برگشت گوشی بعد از به‌روزرسانی/ورود (انباشته شدن تاریخچه)",
+    "بسته نشدن پنجرهٔ ساخت PDF با دکمهٔ برگشت"
   ],
   "files": [
     "index.html",
@@ -16,8 +16,8 @@
     "favicon.png"
   ],
   "sha256": {
-    "index.html": "d27eca48eed4a2843367ab40997a009d49c170c9022086c9ea068066bff977f2",
-    "sw.js": "0f4494b1d6fa0512c25ce33f0fd32c7b89d27c8bb90aad69a417b05e6dde8401",
+    "index.html": "b397eb4d94a6549d07bc41930cb9844fb720d679496f2b4b765fb4deccd756d1",
+    "sw.js": "671bddd61c780d6a6fd149b2afb7dc337bafc12eeba0566d4469c77c05c62a59",
     "manifest.json": "7192c5a474b9e67dbb1ead2e969f8c3dcc498d0a9508711f15ca0c7dfd885a9b",
     "icon-192.png": "5b7aa6b361f6010778c52d57e94485a4de7150b154e7b8f77e9ba89769df900c",
     "icon-512.png": "16f5b5c73f213684e58b97897ae10b1884cf0b3b16593ac43715fca3e58d9fc8",
