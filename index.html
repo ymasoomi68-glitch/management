@@ -1918,7 +1918,7 @@
             </div>
 
             <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;padding:16px;border-top:1px dashed var(--border);">
-                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۱</span><br>
+                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۲</span><br>
                 🎨 طراح: یوسف معصومی
             </div>
         </div>
@@ -7519,7 +7519,7 @@ var CMPDF = (function(){
     /* ═══════════════════════════════════════════════════
        🔄 به‌روزرسانی از GitHub
        ═══════════════════════════════════════════════════ */
-    var APP_VERSION = '4.3.1';
+    var APP_VERSION = '4.3.2';
     var realLS = window.localStorage, UPD_KEY = 'cmupd_v1';
     var pendingUpdate = null;
 
@@ -7668,35 +7668,55 @@ var CMPDF = (function(){
             if (x === null && e.target !== ov) return;
             ov.remove(); cb(x === '1');
         });
+        return ov;
     }
-    var exitAsking = false;
-    // تاریخچه همیشه فقط دو مرحله دارد: [نگهبان، صفحهٔ فعلی]؛ پس «برگشت» از هر صفحه به صفحهٔ اصلی می‌رود
-    try { history.replaceState({ cmGuard: 1 }, ''); history.pushState({ cmPage: 'home' }, ''); } catch(e) {}
+    var exitAsking = false, exitOv = null, histArmed = false, leaving = false;
+    // مرورگرهای موبایل ورودی‌های تاریخچه‌ای را که بدون هیچ لمس کاربر ساخته شده‌اند هنگام «برگشت» رد می‌کنند.
+    // پس نگهبان تاریخچه را در اولین لمس/کلید کاربر می‌سازیم: [نگهبان، صفحهٔ فعلی]
+    function armHistory() {
+        if (histArmed) return;
+        histArmed = true;
+        ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(function(ev) { document.removeEventListener(ev, armHistory, true); });
+        try { history.replaceState({ cmGuard: 1 }, ''); history.pushState({ cmPage: currentPageName || 'home' }, ''); } catch(e) {}
+    }
+    ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(function(ev) { document.addEventListener(ev, armHistory, true); });
+    function pushCur() { try { history.pushState({ cmPage: currentPageName || 'home' }, ''); } catch(x) {} }
+    function closeExitDialog() { if (exitOv) { exitOv.remove(); exitOv = null; } exitAsking = false; }
+    function doExit() {
+        leaving = true;
+        try { window.close(); } catch(x) {}
+        try { history.go(-2); } catch(x) {}
+        setTimeout(function() { // اگر مرورگر اجازهٔ بستن نداد
+            if (document.visibilityState === 'hidden') return;
+            leaving = false;
+            pushCur();
+            alert('مرورگر اجازهٔ بستن خودکار برنامه را نداد.\nبرای خروج، برنامه را از لیست برنامه‌ها ببندید یا دکمهٔ Home را بزنید.');
+        }, 500);
+    }
     window.addEventListener('popstate', function(e) {
-        var st = e.state || {};
-        if (exitAsking) return;
-        function restore() { try { history.pushState({ cmPage: currentPageName }, ''); } catch(x) {} }
+        if (leaving || !histArmed) return;
+        if (exitAsking) { pushCur(); return; } // برگشت وقتی پیام خروج باز است = ماندن
         var open = document.querySelectorAll('.modal-overlay.open');
         if (open.length) {
             var top = open[open.length - 1];
             if (top.id) top.classList.remove('open'); else top.remove();
-            restore(); return;
+            pushCur(); return;
         }
         var hwDetail = document.getElementById('hwDetailView');
         if (currentPageName === 'homework' && hwDetail && hwDetail.style.display !== 'none') {
-            document.getElementById('btnHwBack').click(); restore(); return;
+            document.getElementById('btnHwBack').click(); pushCur(); return;
         }
         if (currentPageName !== 'home') {
             showPage('home', true);
-            try { history.pushState({ cmPage: 'home' }, ''); } catch(x) {}
+            pushCur();
             return;
         }
         exitAsking = true;
-        askExit(function(yes) {
-            exitAsking = false;
-            if (yes) { try { history.back(); } catch(x) {} setTimeout(function() { try { window.close(); } catch(x) {} }, 150); }
-            else { try { history.pushState({ cmPage: 'home' }, ''); } catch(x) {} }
+        exitOv = askExit(function(yes) {
+            exitOv = null; exitAsking = false;
+            if (yes) doExit();
         });
+        pushCur();
     });
 
     /* ═══════════════════════════════════════════════════
