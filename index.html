@@ -1443,13 +1443,6 @@
                     <input type="text" id="studentSearch" placeholder="جستجو در نام، نام پدر، کد ملی...">
                     <button class="search-bar-clear" id="searchClear" title="پاک کردن">✕</button>
                 </div>
-                <select class="sort-select" id="studentSort" title="ترتیب لیست (شمارهٔ دانش‌آموزان هم همین‌طور مرتب می‌شود)">
-                    <option value="family_asc">نام خانوادگی (الف → ی)</option>
-                    <option value="family_desc">نام خانوادگی (ی → الف)</option>
-                    <option value="name_asc">نام (الف → ی)</option>
-                    <option value="code_asc">کد ملی (صعودی)</option>
-                    <option value="code_desc">کد ملی (نزولی)</option>
-                </select>
             </div>
 
             <div id="studentsContainer">
@@ -1918,7 +1911,7 @@
             </div>
 
             <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;padding:16px;border-top:1px dashed var(--border);">
-                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۴</span><br>
+                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۵</span><br>
                 🎨 طراح: یوسف معصومی
             </div>
         </div>
@@ -3061,7 +3054,10 @@ var CMPDF = (function(){
                 });
                 var resorted = false;
                 appData.classes.forEach(function(c) {
-                    if (!c.order && (c.students || []).length > 1) { c.order = 'family_asc'; c.students.sort(studentCmp('family_asc')); resorted = true; }
+                    var before = (c.students || []).map(function(x) { return x.id; }).join(',');
+                    delete c.order;
+                    sortClassStudents(c);
+                    if ((c.students || []).map(function(x) { return x.id; }).join(',') !== before) resorted = true;
                 });
                 if (purged || resorted) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); } catch(e2) {} }
             }
@@ -3317,7 +3313,7 @@ var CMPDF = (function(){
     var sortMode = 'default';
     // مقایسهٔ الفبایی فارسی مستقل از مرورگر
     var FA_ORDER = ' ءآأإاٱبپتثجچحخدذرزژسشصضطظعغفقکگلمنوهةیئ';
-    function faKey(c) {
+    function faLetterKey(c) {
         c = c === '\u064A' || c === '\u0649' ? '\u06CC' : c === '\u0643' ? '\u06A9' : c;
         var i = FA_ORDER.indexOf(c);
         return i >= 0 ? i : 100 + c.charCodeAt(0);
@@ -3325,7 +3321,7 @@ var CMPDF = (function(){
     function faCompare(a, b) {
         a = String(a || '').replace(/[\u200c\u064B-\u065F]/g, ''); b = String(b || '').replace(/[\u200c\u064B-\u065F]/g, '');
         var n = Math.min(a.length, b.length);
-        for (var i = 0; i < n; i++) { var d = faKey(a.charAt(i)) - faKey(b.charAt(i)); if (d) return d; }
+        for (var i = 0; i < n; i++) { var d = faLetterKey(a.charAt(i)) - faLetterKey(b.charAt(i)); if (d) return d; }
         return a.length - b.length;
     }
     function studentCmp(mode) {
@@ -3342,7 +3338,7 @@ var CMPDF = (function(){
     }
     // ترتیب واقعی لیست کلاس (شمارهٔ ردیف در همهٔ بخش‌ها از همین ترتیب می‌آید)
     function sortClassStudents(cls) {
-        if (cls && cls.students) cls.students.sort(studentCmp(cls.order || 'family_asc'));
+        if (cls && cls.students) cls.students.sort(studentCmp('family_asc'));
     }
 
     function refreshClassDropdown() {
@@ -3365,10 +3361,8 @@ var CMPDF = (function(){
         sortMode = 'default';
         var sInput = document.getElementById('studentSearch');
         var sClear = document.getElementById('searchClear');
-        var sSort = document.getElementById('studentSort');
         if (sInput) sInput.value = '';
         if (sClear) sClear.classList.remove('show');
-        if (sSort) sSort.value = 'default';
 
         showPage('students');
         refreshClassDropdown();
@@ -3399,8 +3393,6 @@ var CMPDF = (function(){
 
         var cls = appData.classes[currentClassIndex];
         var allStudents = cls.students || [];
-        var sSortEl = document.getElementById('studentSort');
-        if (sSortEl) sSortEl.value = cls.order || 'family_asc';
 
         if (allStudents.length === 0) {
             container.innerHTML =
@@ -3566,7 +3558,6 @@ var CMPDF = (function(){
 
     var searchInput = document.getElementById('studentSearch');
     var searchClear = document.getElementById('searchClear');
-    var sortSelect = document.getElementById('studentSort');
 
     if (searchInput) {
         searchInput.addEventListener('input', function() {
@@ -3583,17 +3574,6 @@ var CMPDF = (function(){
             renderStudents();
         });
     }
-    if (sortSelect) {
-        sortSelect.addEventListener('change', function() {
-            var c = appData.classes[currentClassIndex];
-            if (!c) return;
-            c.order = this.value;
-            sortClassStudents(c);
-            saveData();
-            renderStudents();
-        });
-    }
-
     /* ═══════════════════════════════════════════════════
        🖨️ چاپ / PDF لیست کلاس
        ═══════════════════════════════════════════════════ */
@@ -6298,8 +6278,10 @@ var CMPDF = (function(){
             dates.forEach(function(d) {
                 var l = bd[d];
                 if (l !== undefined && DESC_LEVELS[l]) {
-                    if (screen) h += '<td style="color:' + DESC_LEVELS[l].color + ';font-weight:bold;white-space:nowrap;">' + DESC_LEVELS[l].label + '</td>';
-                    else h += '<td class="lv' + l + '">' + DESC_LEVELS[l].label + '</td>';
+                    var nt = gradeNotes[getGradeKey(stats.className, sb, d)];
+                    var ntHtml = nt ? '<div style="font-weight:normal;color:#444;font-size:' + (screen ? '0.8em' : Math.max(7, fs - 2) + 'pt') + ';line-height:1.3;">(' + escapeHtml(nt) + ')</div>' : '';
+                    if (screen) h += '<td style="color:' + DESC_LEVELS[l].color + ';font-weight:bold;">' + DESC_LEVELS[l].label + ntHtml + '</td>';
+                    else h += '<td class="lv' + l + '">' + DESC_LEVELS[l].label + ntHtml + '</td>';
                 } else {
                     h += '<td style="color:#999;">—</td>';
                 }
@@ -6338,6 +6320,7 @@ var CMPDF = (function(){
     // ===== محاسبهٔ آمار کامل یک دانش‌آموز =====
     function calcStudentStats(cls, student) {
         var stats = {
+            className: cls.className,
             // نمرات
             grades: {}, // { subject: { levels: [], avgLevel: 0 } }
             gradesTotal: 0,
@@ -7519,7 +7502,7 @@ var CMPDF = (function(){
     /* ═══════════════════════════════════════════════════
        🔄 به‌روزرسانی از GitHub
        ═══════════════════════════════════════════════════ */
-    var APP_VERSION = '4.3.4';
+    var APP_VERSION = '4.3.5';
     var realLS = window.localStorage, UPD_KEY = 'cmupd_v1';
     var pendingUpdate = null;
 
