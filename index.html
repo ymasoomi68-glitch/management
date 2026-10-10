@@ -1911,7 +1911,7 @@
             </div>
 
             <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;padding:16px;border-top:1px dashed var(--border);">
-                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۵</span><br>
+                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۶</span><br>
                 🎨 طراح: یوسف معصومی
             </div>
         </div>
@@ -6408,29 +6408,40 @@ var CMPDF = (function(){
     }
 
     // ===== محاسبهٔ امتیاز کل دانش‌آموز (برای رتبه‌بندی) =====
+    // هر بخش یک درصد ۰ تا ۱۰۰ می‌شود (یا null اگر داده‌ای ثبت نشده)؛ امتیاز کل میانگین وزنی بخش‌های دارای داده است
+    var SCORE_WEIGHTS = { grades: 50, attendance: 20, behavior: 15, homework: 15 };
+    function calcComponents(stats) {
+        var c = { grades: null, attendance: null, behavior: null, homework: null };
+        var subs = Object.keys(stats.grades).filter(function(k) { return stats.grades[k].levels.length > 0; });
+        if (subs.length) {
+            var sum = 0;
+            subs.forEach(function(k) { sum += stats.grades[k].avgLevel; });
+            c.grades = ((4 - sum / subs.length) / 3) * 100; // سطح ۱ = ۱۰۰٪ ، سطح ۴ = ۰٪
+        }
+        var a = stats.attendance, den = a.present + a.late + a.absentU; // غیبت موجه در محاسبه نمی‌آید
+        if (den > 0) c.attendance = ((a.present + 0.5 * a.late) / den) * 100;
+        var b = stats.behavior;
+        if (b.positive + b.negative > 0) c.behavior = (b.positive / (b.positive + b.negative)) * 100;
+        var h = stats.homework;
+        if (h.total > 0) c.homework = ((h.done + 0.5 * h.partial) / h.total) * 100;
+        return c;
+    }
     function calcStudentScore(stats) {
-        var score = 0;
-        // نمرات: هر 1 = 4 امتیاز
-        Object.keys(stats.grades).forEach(function(subj) {
-            var g = stats.grades[subj];
-            if (g.levels.length > 0) {
-                // تبدیل 1..4 به 4..1 (1 بهتره)
-                var quality = 5 - g.avgLevel;
-                score += quality * 10;
-            }
+        var c = calcComponents(stats), tw = 0, sum = 0;
+        Object.keys(SCORE_WEIGHTS).forEach(function(k) {
+            if (c[k] !== null) { tw += SCORE_WEIGHTS[k]; sum += c[k] * SCORE_WEIGHTS[k]; }
         });
-        // حضور
-        score += stats.attendance.present * 0.5;
-        score -= stats.attendance.absent * 1;
-        score -= stats.attendance.late * 0.3;
-        // رفتار
-        score += stats.behavior.positive * 0.5;
-        score -= stats.behavior.negative * 0.8;
-        // تکالیف
-        score += stats.homework.done * 0.5;
-        score += stats.homework.partial * 0.25;
-        score -= stats.homework.notdone * 0.8;
-        return Math.round(score * 100) / 100;
+        return tw > 0 ? Math.round(sum / tw * 10) / 10 : 0;
+    }
+    // رتبهٔ برابر برای امتیاز برابر (۱، ۱، ۳ ...)؛ بین مساوی‌ها ترتیب الفبایی لیست حفظ می‌شود
+    function rankStudents(cls) {
+        var ranked = (cls.students || []).map(function(s) {
+            var stats = calcStudentStats(cls, s);
+            return { student: s, stats: stats, comp: calcComponents(stats), score: calcStudentScore(stats) };
+        });
+        ranked.sort(function(x, y) { return y.score - x.score; });
+        ranked.forEach(function(r, i) { r.rank = (i > 0 && ranked[i - 1].score === r.score) ? ranked[i - 1].rank : i + 1; });
+        return ranked;
     }
 
     // ===== رندر =====
@@ -6677,6 +6688,7 @@ var CMPDF = (function(){
         content.innerHTML = html;
     }
 
+    function pctCell(v) { return v === null ? '—' : toPersianNum(Math.round(v)) + '٪'; }
     // ===== تب ۳: رتبه‌بندی =====
     function renderRanking(cls) {
         var content = document.getElementById('reportContent');
@@ -6687,21 +6699,12 @@ var CMPDF = (function(){
             return;
         }
 
-        var ranked = students.map(function(s) {
-            var stats = calcStudentStats(cls, s);
-            return {
-                student: s,
-                stats: stats,
-                score: calcStudentScore(stats)
-            };
-        });
-
-        ranked.sort(function(a, b) { return b.score - a.score; });
+        var ranked = rankStudents(cls);
 
         var html = '<div class="report-section">';
         html += '<div class="report-section-title">🏆 رتبه‌بندی کلاس بر اساس امتیاز کلی</div>';
         html += '<p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">';
-        html += 'امتیاز بر اساس: کیفیت نمرات (وزن بالا) + حضور + رفتار + تکالیف';
+        html += 'امتیاز از ۱۰۰: نمرات ۵۰٪ + حضور ۲۰٪ + رفتار ۱۵٪ + تکالیف ۱۵٪ (بخشی که داده‌ای ندارد حساب نمی‌شود؛ غیبت موجه کسر نمی‌شود)';
         html += '</p>';
         html += '<table class="report-mini-table"><thead><tr>';
         html += '<th style="width:60px;">رتبه</th>';
@@ -6714,7 +6717,7 @@ var CMPDF = (function(){
         html += '</tr></thead><tbody>';
 
         ranked.forEach(function(r, i) {
-            var rank = i + 1;
+            var rank = r.rank;
             var rankCls = rank <= 3 ? ' rank-' + rank : ' rank-other';
             var medal = rank === 1 ? '🥇' : (rank === 2 ? '🥈' : (rank === 3 ? '🥉' : toPersianNum(rank)));
             var attTotal = r.stats.attendance.present + r.stats.attendance.absent + r.stats.attendance.late;
@@ -6725,10 +6728,10 @@ var CMPDF = (function(){
             html += '<td style="text-align:center;"><span class="rank-badge' + rankCls + '">' + medal + '</span></td>';
             html += '<td><strong>' + escapeHtml((r.student.family || '') + ' ' + (r.student.name || '')) + '</strong></td>';
             html += '<td style="text-align:center;font-weight:bold;color:var(--primary-dark);">' + toPersianNum(r.score) + '</td>';
-            html += '<td style="text-align:center;font-family:monospace;">' + toPersianNum(r.stats.gradesCount) + '</td>';
-            html += '<td style="text-align:center;">' + toPersianNum(attPercent) + '٪</td>';
+            html += '<td style="text-align:center;">' + pctCell(r.comp.grades) + '</td>';
+            html += '<td style="text-align:center;">' + pctCell(r.comp.attendance) + '</td>';
             html += '<td style="text-align:center;font-weight:bold;"><span style="color:#10b981;">' + toPersianNum(r.stats.behavior.positive) + '</span> / <span style="color:#ef4444;">' + toPersianNum(r.stats.behavior.negative) + '</span></td>';
-            html += '<td style="text-align:center;">' + toPersianNum(hwPercent) + '٪</td>';
+            html += '<td style="text-align:center;">' + pctCell(r.comp.homework) + '</td>';
             html += '</tr>';
         });
         html += '</tbody></table></div>';
@@ -6746,36 +6749,23 @@ var CMPDF = (function(){
             return;
         }
 
-        var ranked = students.map(function(s) {
-            var stats = calcStudentStats(cls, s);
-            return { student: s, stats: stats, score: calcStudentScore(stats) };
-        });
+        var ranked = rankStudents(cls);
 
-        // بهترین در هر زمینه
-        var best = {
-            grades: null, gradesScore: -Infinity,
-            attendance: null, attScore: -Infinity,
-            behavior: null, behScore: -Infinity,
-            homework: null, hwScore: -Infinity
-        };
-
-        ranked.forEach(function(r) {
-            var gradeScore = 0;
-            Object.keys(r.stats.grades).forEach(function(subj) {
-                gradeScore += (5 - r.stats.grades[subj].avgLevel);
+        // بهترین در هر زمینه (بر اساس درصد همان بخش؛ فقط دانش‌آموزانی که در آن بخش داده دارند)
+        function bestOf(key, minVal) {
+            var top = null;
+            ranked.forEach(function(r) {
+                var v = r.comp[key];
+                if (v === null || v < minVal) return;
+                if (!top || v > top.v) top = { r: r, v: v };
             });
-            if (gradeScore > best.gradesScore) { best.gradesScore = gradeScore; best.grades = r; }
-
-            var attTotal = r.stats.attendance.present + r.stats.attendance.absent + r.stats.attendance.late;
-            var attScore = attTotal > 0 ? (r.stats.attendance.present / attTotal) : 0;
-            if (attScore > best.attScore) { best.attScore = attScore; best.attendance = r; }
-
-            var behScore = r.stats.behavior.positive - r.stats.behavior.negative;
-            if (behScore > best.behScore) { best.behScore = behScore; best.behavior = r; }
-
-            var hwScore = r.stats.homework.total > 0 ? (r.stats.homework.done / r.stats.homework.total) : 0;
-            if (hwScore > best.hwScore) { best.hwScore = hwScore; best.homework = r; }
-        });
+            return top ? top.r : null;
+        }
+        var best = {
+            grades: bestOf('grades', 0), attendance: bestOf('attendance', 0),
+            behavior: bestOf('behavior', 50.0001), homework: bestOf('homework', 0.0001)
+        };
+        best.behScore = best.behavior ? 1 : 0; best.hwScore = best.homework ? 1 : 0;
 
         var html = '';
         html += '<div class="report-section">';
@@ -6786,7 +6776,7 @@ var CMPDF = (function(){
         html += '<div style="font-size:32px;">🥇</div>';
         html += '<div class="compare-card-title" style="color:#5a3d00;font-weight:bold;">رتبهٔ اول کلاس</div>';
         html += '<div class="compare-card-value" style="color:#5a3d00;font-size:16px;">' + (ranked[0] ? escapeHtml((ranked[0].student.family || '') + ' ' + (ranked[0].student.name || '')) : '—') + '</div>';
-        html += '<div style="font-size:13px;margin-top:6px;">امتیاز: ' + (ranked[0] ? toPersianNum(ranked[0].score) : '—') + '</div>';
+        html += '<div style="font-size:13px;margin-top:6px;">امتیاز: ' + (ranked[0] ? toPersianNum(ranked[0].score) + ' از ۱۰۰' : '—') + '</div>';
         html += '</div>';
 
         if (best.grades) {
@@ -7502,7 +7492,7 @@ var CMPDF = (function(){
     /* ═══════════════════════════════════════════════════
        🔄 به‌روزرسانی از GitHub
        ═══════════════════════════════════════════════════ */
-    var APP_VERSION = '4.3.5';
+    var APP_VERSION = '4.3.6';
     var realLS = window.localStorage, UPD_KEY = 'cmupd_v1';
     var pendingUpdate = null;
 
