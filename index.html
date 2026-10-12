@@ -892,6 +892,21 @@
         margin-top: 6px;
     }
 
+    /* رتبه‌بندی روی موبایل: هر دانش‌آموز یک کارت */
+    @media (max-width: 640px) {
+        .rank-table, .rank-table tbody { display: block; width: 100%; }
+        .rank-table thead { display: none; }
+        .rank-table tr { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 10px; align-items: center;
+            background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
+        .rank-table td { border: 0 !important; padding: 0 !important; text-align: right !important; }
+        .rank-table td.rk-name { font-size: 15px; }
+        .rank-table td.rk-score { font-size: 15px; white-space: nowrap; }
+        .rank-table td.rk-score::before { content: 'امتیاز: '; font-weight: normal; color: var(--text-muted); font-size: 12px; }
+        .rank-table td[data-l]:not(.rk-score) { grid-column: span 3; display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; padding-top: 4px !important; border-top: 1px dashed var(--border) !important; }
+        .rank-table td[data-l]:not(.rk-score)::before { content: attr(data-l); color: var(--text-muted); font-weight: normal; }
+    }
+
     /* رتبه‌بندی */
     .rank-badge {
         display: inline-flex;
@@ -1911,7 +1926,7 @@
             </div>
 
             <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;padding:16px;border-top:1px dashed var(--border);">
-                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۶</span><br>
+                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۷</span><br>
                 🎨 طراح: یوسف معصومی
             </div>
         </div>
@@ -6433,14 +6448,14 @@ var CMPDF = (function(){
         });
         return tw > 0 ? Math.round(sum / tw * 10) / 10 : 0;
     }
-    // رتبهٔ برابر برای امتیاز برابر (۱، ۱، ۳ ...)؛ بین مساوی‌ها ترتیب الفبایی لیست حفظ می‌شود
+    // رتبهٔ برابر برای امتیاز برابر و رتبه‌های پیوسته (۱، ۱، ۲، ۲، ۲، ۳ ...)؛ بین مساوی‌ها ترتیب الفبایی لیست حفظ می‌شود
     function rankStudents(cls) {
         var ranked = (cls.students || []).map(function(s) {
             var stats = calcStudentStats(cls, s);
             return { student: s, stats: stats, comp: calcComponents(stats), score: calcStudentScore(stats) };
         });
         ranked.sort(function(x, y) { return y.score - x.score; });
-        ranked.forEach(function(r, i) { r.rank = (i > 0 && ranked[i - 1].score === r.score) ? ranked[i - 1].rank : i + 1; });
+        ranked.forEach(function(r, i) { r.rank = i === 0 ? 1 : (ranked[i - 1].score === r.score ? ranked[i - 1].rank : ranked[i - 1].rank + 1); });
         return ranked;
     }
 
@@ -6706,7 +6721,7 @@ var CMPDF = (function(){
         html += '<p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">';
         html += 'امتیاز از ۱۰۰: نمرات ۵۰٪ + حضور ۲۰٪ + رفتار ۱۵٪ + تکالیف ۱۵٪ (بخشی که داده‌ای ندارد حساب نمی‌شود؛ غیبت موجه کسر نمی‌شود)';
         html += '</p>';
-        html += '<table class="report-mini-table"><thead><tr>';
+        html += '<table class="report-mini-table rank-table"><thead><tr>';
         html += '<th style="width:60px;">رتبه</th>';
         html += '<th>نام و نام خانوادگی</th>';
         html += '<th style="text-align:center;">امتیاز</th>';
@@ -6720,18 +6735,14 @@ var CMPDF = (function(){
             var rank = r.rank;
             var rankCls = rank <= 3 ? ' rank-' + rank : ' rank-other';
             var medal = rank === 1 ? '🥇' : (rank === 2 ? '🥈' : (rank === 3 ? '🥉' : toPersianNum(rank)));
-            var attTotal = r.stats.attendance.present + r.stats.attendance.absent + r.stats.attendance.late;
-            var attPercent = attTotal > 0 ? Math.round((r.stats.attendance.present / attTotal) * 100) : 0;
-            var hwPercent = r.stats.homework.total > 0 ? Math.round((r.stats.homework.done / r.stats.homework.total) * 100) : 0;
-
             html += '<tr>';
-            html += '<td style="text-align:center;"><span class="rank-badge' + rankCls + '">' + medal + '</span></td>';
-            html += '<td><strong>' + escapeHtml((r.student.family || '') + ' ' + (r.student.name || '')) + '</strong></td>';
-            html += '<td style="text-align:center;font-weight:bold;color:var(--primary-dark);">' + toPersianNum(r.score) + '</td>';
-            html += '<td style="text-align:center;">' + pctCell(r.comp.grades) + '</td>';
-            html += '<td style="text-align:center;">' + pctCell(r.comp.attendance) + '</td>';
-            html += '<td style="text-align:center;font-weight:bold;"><span style="color:#10b981;">' + toPersianNum(r.stats.behavior.positive) + '</span> / <span style="color:#ef4444;">' + toPersianNum(r.stats.behavior.negative) + '</span></td>';
-            html += '<td style="text-align:center;">' + pctCell(r.comp.homework) + '</td>';
+            html += '<td class="rk-rank" style="text-align:center;"><span class="rank-badge' + rankCls + '">' + medal + '</span></td>';
+            html += '<td class="rk-name"><strong>' + escapeHtml((r.student.family || '') + ' ' + (r.student.name || '')) + '</strong></td>';
+            html += '<td class="rk-score" data-l="امتیاز" style="text-align:center;font-weight:bold;color:var(--primary-dark);">' + toPersianNum(r.score) + '</td>';
+            html += '<td data-l="نمرات" style="text-align:center;">' + pctCell(r.comp.grades) + '</td>';
+            html += '<td data-l="حضور" style="text-align:center;">' + pctCell(r.comp.attendance) + '</td>';
+            html += '<td data-l="رفتار (مثبت / منفی)" style="text-align:center;font-weight:bold;"><span><span style="color:#10b981;">' + toPersianNum(r.stats.behavior.positive) + '</span> / <span style="color:#ef4444;">' + toPersianNum(r.stats.behavior.negative) + '</span></span></td>';
+            html += '<td data-l="تکالیف" style="text-align:center;">' + pctCell(r.comp.homework) + '</td>';
             html += '</tr>';
         });
         html += '</tbody></table></div>';
@@ -6752,20 +6763,25 @@ var CMPDF = (function(){
         var ranked = rankStudents(cls);
 
         // بهترین در هر زمینه (بر اساس درصد همان بخش؛ فقط دانش‌آموزانی که در آن بخش داده دارند)
-        function bestOf(key, minVal) {
-            var top = null;
+        function bestOf(key, minVal) { // فهرست همهٔ دانش‌آموزانی که بالاترین مقدار را دارند
+            var top = -1, list = [];
             ranked.forEach(function(r) {
                 var v = r.comp[key];
                 if (v === null || v < minVal) return;
-                if (!top || v > top.v) top = { r: r, v: v };
+                if (v > top + 1e-9) { top = v; list = [r]; }
+                else if (Math.abs(v - top) <= 1e-9) list.push(r);
             });
-            return top ? top.r : null;
+            return list;
         }
+        function namesOf(list) {
+            return list.slice().sort(function(a, b) { return faCompare(a.student.family, b.student.family) || faCompare(a.student.name, b.student.name); })
+                .map(function(r) { return escapeHtml((r.student.family || '') + ' ' + (r.student.name || '')); }).join('<br>');
+        }
+        var topList = ranked.filter(function(r) { return r.rank === 1; });
         var best = {
             grades: bestOf('grades', 0), attendance: bestOf('attendance', 0),
             behavior: bestOf('behavior', 50.0001), homework: bestOf('homework', 0.0001)
         };
-        best.behScore = best.behavior ? 1 : 0; best.hwScore = best.homework ? 1 : 0;
 
         var html = '';
         html += '<div class="report-section">';
@@ -6775,39 +6791,39 @@ var CMPDF = (function(){
         html += '<div class="compare-card" style="background:linear-gradient(135deg,#ffd700,#f59e0b);color:#5a3d00;">';
         html += '<div style="font-size:32px;">🥇</div>';
         html += '<div class="compare-card-title" style="color:#5a3d00;font-weight:bold;">رتبهٔ اول کلاس</div>';
-        html += '<div class="compare-card-value" style="color:#5a3d00;font-size:16px;">' + (ranked[0] ? escapeHtml((ranked[0].student.family || '') + ' ' + (ranked[0].student.name || '')) : '—') + '</div>';
-        html += '<div style="font-size:13px;margin-top:6px;">امتیاز: ' + (ranked[0] ? toPersianNum(ranked[0].score) + ' از ۱۰۰' : '—') + '</div>';
+        html += '<div class="compare-card-value" style="color:#5a3d00;font-size:16px;">' + (topList.length ? namesOf(topList) : '—') + '</div>';
+        html += '<div style="font-size:13px;margin-top:6px;">امتیاز: ' + (topList.length ? toPersianNum(topList[0].score) + ' از ۱۰۰' : '—') + '</div>';
         html += '</div>';
 
-        if (best.grades) {
+        if (best.grades.length) {
             html += '<div class="compare-card" style="background:linear-gradient(135deg,#a8edea,#fed6e3);color:#333;">';
             html += '<div style="font-size:32px;">📝</div>';
             html += '<div class="compare-card-title" style="color:#333;font-weight:bold;">بهترین در نمرات</div>';
-            html += '<div class="compare-card-value" style="color:#333;font-size:14px;">' + escapeHtml((best.grades.student.family || '') + ' ' + (best.grades.student.name || '')) + '</div>';
+            html += '<div class="compare-card-value" style="color:#333;font-size:14px;">' + namesOf(best.grades) + '</div>';
             html += '</div>';
         }
 
-        if (best.attendance) {
+        if (best.attendance.length) {
             html += '<div class="compare-card" style="background:linear-gradient(135deg,#43e97b,#38f9d7);color:#0a3d20;">';
             html += '<div style="font-size:32px;">✅</div>';
             html += '<div class="compare-card-title" style="color:#0a3d20;font-weight:bold;">بهترین در حضور</div>';
-            html += '<div class="compare-card-value" style="color:#0a3d20;font-size:14px;">' + escapeHtml((best.attendance.student.family || '') + ' ' + (best.attendance.student.name || '')) + '</div>';
+            html += '<div class="compare-card-value" style="color:#0a3d20;font-size:14px;">' + namesOf(best.attendance) + '</div>';
             html += '</div>';
         }
 
-        if (best.behavior && best.behScore > 0) {
+        if (best.behavior.length) {
             html += '<div class="compare-card" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;">';
             html += '<div style="font-size:32px;">🎯</div>';
             html += '<div class="compare-card-title" style="color:white;font-weight:bold;">بهترین در رفتار</div>';
-            html += '<div class="compare-card-value" style="color:white;font-size:14px;">' + escapeHtml((best.behavior.student.family || '') + ' ' + (best.behavior.student.name || '')) + '</div>';
+            html += '<div class="compare-card-value" style="color:white;font-size:14px;">' + namesOf(best.behavior) + '</div>';
             html += '</div>';
         }
 
-        if (best.homework && best.hwScore > 0) {
+        if (best.homework.length) {
             html += '<div class="compare-card" style="background:linear-gradient(135deg,#4facfe,#00f2fe);color:#003a5c;">';
             html += '<div style="font-size:32px;">📖</div>';
             html += '<div class="compare-card-title" style="color:#003a5c;font-weight:bold;">بهترین در تکالیف</div>';
-            html += '<div class="compare-card-value" style="color:#003a5c;font-size:14px;">' + escapeHtml((best.homework.student.family || '') + ' ' + (best.homework.student.name || '')) + '</div>';
+            html += '<div class="compare-card-value" style="color:#003a5c;font-size:14px;">' + namesOf(best.homework) + '</div>';
             html += '</div>';
         }
 
@@ -7492,7 +7508,7 @@ var CMPDF = (function(){
     /* ═══════════════════════════════════════════════════
        🔄 به‌روزرسانی از GitHub
        ═══════════════════════════════════════════════════ */
-    var APP_VERSION = '4.3.6';
+    var APP_VERSION = '4.3.7';
     var realLS = window.localStorage, UPD_KEY = 'cmupd_v1';
     var pendingUpdate = null;
 
