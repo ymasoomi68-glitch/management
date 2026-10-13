@@ -488,6 +488,14 @@
     /* ═══════════════════════════════════════════════════
        🎯 رفتار
        ═══════════════════════════════════════════════════ */
+    .behavior-quick { display: flex; gap: 6px; flex: 0 0 auto; }
+    .bq-btn { border: 1.5px solid; border-radius: 10px; padding: 6px 10px; font: 700 12px inherit; font-family: inherit; cursor: pointer; white-space: nowrap; background: transparent; }
+    .bq-pos { color: #059669; border-color: #6ee7b7; background: #ecfdf5; }
+    .bq-neg { color: #dc2626; border-color: #fca5a5; background: #fef2f2; }
+    .bq-btn:active { transform: scale(.95); }
+    body.dark .bq-pos { background: rgba(16,185,129,.15); color: #6ee7b7; }
+    body.dark .bq-neg { background: rgba(239,68,68,.15); color: #fca5a5; }
+    @media (max-width: 520px) { .behavior-row { flex-wrap: wrap; } .behavior-quick { order: 5; width: 100%; } .bq-btn { flex: 1; padding: 8px; } }
     .behavior-row {
         display: flex; align-items: center;
         padding: 12px 14px;
@@ -673,6 +681,16 @@
     .hw-stat-pending {
         color: #f59e0b; font-weight: bold;
     }
+    .hw-card-edit {
+        flex: 0 0 auto; width: 30px; height: 30px; margin-inline-start: 8px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #dbeafe; color: #1d4ed8; border: 1.5px solid #93c5fd; border-radius: 50%;
+        font-size: 14px; line-height: 1; cursor: pointer; padding: 0;
+        transition: background .15s, transform .15s;
+    }
+    .hw-card-edit:hover { background: #2563eb; color: #fff; border-color: #2563eb; transform: scale(1.08); }
+    body.dark .hw-card-edit { background: rgba(37,99,235,.2); color: #93c5fd; border-color: rgba(147,197,253,.5); }
+    .hw-card-actions { display: inline-flex; align-items: center; flex: 0 0 auto; }
     .hw-card-delete {
         flex: 0 0 auto; width: 30px; height: 30px;
         margin-inline-start: 14px;
@@ -1670,6 +1688,7 @@
                     <label class="form-label" style="margin:0;">تا ماه:</label>
                     <select class="form-select" id="hwToDate" style="max-width:120px;"></select>
                     <button class="btn btn-outline btn-sm" id="btnHwResetFilter">🔄 پاک کردن</button>
+                    <button class="btn btn-primary btn-sm" id="btnHwClassReport">📊 گزارش تکالیف کلاس</button>
                 </div>
 
                 <div id="hwContainer">
@@ -1875,7 +1894,7 @@
                         <span class="settings-item-label">ظرفیت تقریبی</span>
                         <span class="settings-item-value">۵ MB</span>
                     </div>
-                    <p style="font-size:11px;color:var(--text-muted);margin-top:10px;line-height:1.6;">
+                    <p id="storageWarnText" style="font-size:11px;color:var(--text-muted);margin-top:10px;line-height:1.6;">
                         ⚠️ اگر حافظه پر شد، از داده‌های قدیمی پشتیبان بگیرید و پاک کنید.
                     </p>
                 </div>
@@ -1926,7 +1945,7 @@
             </div>
 
             <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;padding:16px;border-top:1px dashed var(--border);">
-                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۳.۷</span><br>
+                📚 مدیریت کلاسی - نسخهٔ <span id="appVersionLabel">۴.۴.۰</span><br>
                 🎨 طراح: یوسف معصومی
             </div>
         </div>
@@ -2317,12 +2336,58 @@ var CMAuth = (function(){
     }
     function resetUserData(){ wipeUserData(curUser()); }
 
+    /* ---- هشدار پر شدن حافظه ---- */
+    var StorageGuard = (function(){
+        var LIMIT = 5 * 1024 * 1024, lastCheck = 0, shownLevel = 0, fullShown = 0;
+        function usage(){
+            var used = 0, i, k;
+            try { for(i=0;i<real.length;i++){ k=real.key(i); if(k) used += k.length + String(real.getItem(k)||'').length; } } catch(e){}
+            return { used: used, limit: LIMIT, pct: Math.min(100, Math.round(used/LIMIT*100)) };
+        }
+        function bar(msg, level){
+            function go(){
+                var b = document.getElementById('cmStorageBar');
+                if(!b){ b = document.createElement('div'); b.id='cmStorageBar';
+                    b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;padding:10px 14px;font:600 14px/1.7 Vazirmatn,Tahoma,sans-serif;direction:rtl;text-align:center;color:#fff;box-shadow:0 2px 12px rgba(0,0,0,.3);';
+                    document.body.appendChild(b); }
+                b.style.background = level>=2 ? '#b91c1c' : '#d97706';
+                b.innerHTML = '';
+                var t = document.createElement('span'); t.textContent = msg; b.appendChild(t);
+                var a = document.createElement('button'); a.textContent='تنظیمات و پشتیبان‌گیری';
+                a.style.cssText='margin:0 10px;padding:4px 12px;border:0;border-radius:8px;background:#fff;color:#111;font:inherit;cursor:pointer;';
+                a.onclick=function(){ b.remove(); try{ document.querySelector('[data-page="settings"]').click(); }catch(e){} };
+                var x = document.createElement('button'); x.textContent='✕'; x.setAttribute('aria-label','بستن');
+                x.style.cssText='padding:2px 10px;border:0;border-radius:8px;background:rgba(255,255,255,.25);color:#fff;font:inherit;cursor:pointer;';
+                x.onclick=function(){ b.remove(); };
+                b.appendChild(a); b.appendChild(x);
+            }
+            if(document.body) go(); else document.addEventListener('DOMContentLoaded', go);
+        }
+        function check(force){
+            var now = Date.now(); if(!force && now - lastCheck < 3000) return; lastCheck = now;
+            var u = usage(), level = u.pct>=95 ? 3 : u.pct>=90 ? 2 : u.pct>=80 ? 1 : 0;
+            if(level > shownLevel){
+                shownLevel = level;
+                var left = 100 - u.pct;
+                bar('⚠️ حافظهٔ برنامه ' + u.pct.toLocaleString('fa-IR') + '٪ پر شده است (' + left.toLocaleString('fa-IR') + '٪ باقی‌مانده). هرچه زودتر پشتیبان بگیرید و داده‌های قدیمی را پاک کنید؛ با پر شدن کامل، ذخیره‌سازی داده‌های جدید ممکن نیست.', level>=2?2:1);
+                if(level >= 3){ try { alert('⚠️ هشدار: حافظهٔ برنامه تقریباً پر شده است.\nقبل از پر شدن کامل از داده‌ها پشتیبان بگیرید و داده‌های قدیمی را پاک کنید، وگرنه اطلاعات جدید ذخیره نمی‌شود.'); } catch(e){} }
+            }
+        }
+        function full(){
+            if(Date.now() - fullShown < 4000) return; fullShown = Date.now();
+            bar('❌ حافظه پر شد و آخرین تغییر ذخیره نشد! همین حالا پشتیبان بگیرید و داده‌های قدیمی را پاک کنید.', 2);
+            try { alert('❌ حافظهٔ ذخیره‌سازی پر شده است و آخرین تغییر ذخیره نشد.\nاز «تنظیمات ← پشتیبان‌گیری» فایل پشتیبان بگیرید و سپس داده‌های قدیمی (مثلاً سال تحصیلی گذشته) را پاک کنید.'); } catch(e){}
+        }
+        return { usage: usage, check: check, full: full };
+    })();
+    window.CMStorageGuard = StorageGuard;
+
     /* فضای ذخیره‌سازی اختصاصی هر کاربر؛ جایگزین localStorage داخل برنامه */
     function store(){
         var pre = prefixFor(curUser());
         return {
             getItem: function(k){ return real.getItem(pre+k); },
-            setItem: function(k,v){ real.setItem(pre+k, v); },
+            setItem: function(k,v){ try { real.setItem(pre+k, v); } catch(e) { StorageGuard.full(); throw e; } StorageGuard.check(); },
             removeItem: function(k){ real.removeItem(pre+k); },
             keys: function(){ var out=[], i, k; for(i=0;i<real.length;i++){ k=real.key(i); if(!k) continue;
                 if(pre===''){ if(k.indexOf('cm_')===0) out.push(k); } else if(k.indexOf(pre)===0) out.push(k.substring(pre.length)); } return out; }
@@ -5370,6 +5435,10 @@ var CMPDF = (function(){
             html += '<div>' + escapeHtml((s.family || '') + ' ' + (s.name || '')) + '</div>';
             if (s.codemelli) html += '<div class="att-code">' + escapeHtml(s.codemelli) + '</div>';
             html += '</div>';
+            html += '<div class="behavior-quick">';
+            html += '<button type="button" class="bq-btn bq-pos" data-bq="positive" title="ثبت رفتار مثبت">＋ مثبت</button>';
+            html += '<button type="button" class="bq-btn bq-neg" data-bq="negative" title="ثبت رفتار منفی">－ منفی</button>';
+            html += '</div>';
             html += '<div class="behavior-scores">';
             html += '<div class="score-badge positive" title="تعداد رفتار مثبت"><div class="sb-num">' + toPersianNum(st.positive) + '</div><div class="sb-label">مثبت</div></div>';
             html += '<div class="score-badge negative" title="تعداد رفتار منفی"><div class="sb-num">' + toPersianNum(st.negative) + '</div><div class="sb-label">منفی</div></div>';
@@ -5380,6 +5449,12 @@ var CMPDF = (function(){
 
         container.innerHTML = html;
 
+        container.querySelectorAll('.bq-btn').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                openBehaviorModal(btn.closest('.behavior-row').getAttribute('data-sid'), btn.getAttribute('data-bq'));
+            });
+        });
         container.querySelectorAll('.behavior-row').forEach(function(row) {
             row.addEventListener('click', function() {
                 var sid = row.getAttribute('data-sid');
@@ -5391,11 +5466,7 @@ var CMPDF = (function(){
 
     function showStudentBehaviorHistory(cls, student) {
         var records = getClassBehaviors(cls).filter(function(r) {
-            if (r.studentId !== student.id) return false;
-            var m = String(r.date || '').substring(0, 7), rk = monthRangeKeys(behaviorFilterFrom, behaviorFilterTo);
-            if (rk.from && m < rk.from) return false;
-            if (rk.to && m > rk.to) return false;
-            return true;
+            return r.studentId === student.id;
         });
 
         records.sort(function(a, b) { return b.date.localeCompare(a.date); });
@@ -5452,7 +5523,7 @@ var CMPDF = (function(){
     // ═══ مودال ثبت رفتار ═══
     var behaviorFormType = 'positive';
 
-    function openBehaviorModal(preStudentId) {
+    function openBehaviorModal(preStudentId, presetType) {
         if (currentBehaviorClass < 0) { alert('ابتدا یک کلاس انتخاب کنید.'); return; }
         var cls = appData.classes[currentBehaviorClass];
 
@@ -5469,9 +5540,9 @@ var CMPDF = (function(){
         document.getElementById('behaviorDate').value = getTodayJalaliStr();
         document.getElementById('behaviorReason').value = '';
 
-        behaviorFormType = 'positive';
+        behaviorFormType = presetType === 'negative' ? 'negative' : 'positive';
         document.querySelectorAll('.type-btn').forEach(function(b) {
-            b.classList.toggle('active', b.getAttribute('data-type') === 'positive');
+            b.classList.toggle('active', b.getAttribute('data-type') === behaviorFormType);
         });
 
         renderQuickReasons();
@@ -5797,7 +5868,8 @@ var CMPDF = (function(){
             html += '<div class="hw-card-header">';
             html += '<div class="hw-card-title">📝 ' + escapeHtml(h.title) + '</div>';
             if (h.subject) html += '<span class="hw-card-subject">' + escapeHtml(h.subject) + '</span>';
-            html += '<button class="hw-card-delete" data-delete-hw="' + h.id + '" title="حذف تکلیف" aria-label="حذف تکلیف">✕</button>';
+            html += '<span class="hw-card-actions"><button class="hw-card-edit" data-edit-hw="' + h.id + '" title="ویرایش تکلیف" aria-label="ویرایش تکلیف">✏️</button>';
+            html += '<button class="hw-card-delete" data-delete-hw="' + h.id + '" title="حذف تکلیف" aria-label="حذف تکلیف">✕</button></span>';
             html += '</div>';
             if (h.description) {
                 html += '<div class="hw-card-desc">' + escapeHtml(h.description) + '</div>';
@@ -5820,9 +5892,16 @@ var CMPDF = (function(){
         // رویدادها
         container.querySelectorAll('.hw-card').forEach(function(card) {
             card.addEventListener('click', function(e) {
-                if (e.target.classList.contains('hw-card-delete')) return;
+                if (e.target.closest && e.target.closest('.hw-card-actions')) return;
                 var hwId = card.getAttribute('data-hw-id');
                 openHomeworkDetail(hwId);
+            });
+        });
+
+        container.querySelectorAll('[data-edit-hw]').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                openHomeworkModal(btn.getAttribute('data-edit-hw'));
             });
         });
 
@@ -5965,8 +6044,11 @@ var CMPDF = (function(){
     }
 
     // ═══ مودال تکلیف جدید ═══
-    function openHomeworkModal() {
+    var editingHwId = null;
+    function openHomeworkModal(editId) {
+        if (typeof editId !== 'string') editId = null;
         if (currentHwClass < 0) { alert('ابتدا یک کلاس انتخاب کنید.'); return; }
+        editingHwId = editId;
 
         var sel = document.getElementById('hwSubject');
         sel.innerHTML = '<option value="">— بدون درس —</option>';
@@ -5977,15 +6059,24 @@ var CMPDF = (function(){
             sel.appendChild(opt);
         });
 
-        document.getElementById('hwTitle').value = '';
-        document.getElementById('hwDueDate').value = getTodayJalaliStr();
-        document.getElementById('hwDescription').value = '';
+        var editHw = null;
+        if (editId) editHw = getClassHomeworks(appData.classes[currentHwClass]).filter(function(h) { return h.id === editId; })[0] || null;
+        if (!editHw) editingHwId = null;
+        if (editHw && editHw.subject && subjectsList.indexOf(editHw.subject) < 0) {
+            var xo = document.createElement('option'); xo.value = editHw.subject; xo.textContent = editHw.subject; sel.appendChild(xo);
+        }
+        document.getElementById('hwTitle').value = editHw ? editHw.title : '';
+        sel.value = editHw ? (editHw.subject || '') : '';
+        document.getElementById('hwDueDate').value = editHw ? editHw.dueDate : getTodayJalaliStr();
+        document.getElementById('hwDescription').value = editHw ? (editHw.description || '') : '';
+        document.getElementById('modalHomeworkTitle').textContent = editHw ? '✏️ ویرایش تکلیف' : '➕ تکلیف جدید';
+        try { var dt = document.getElementById('hwDueDateText'); if (dt) dt.textContent = ''; document.getElementById('hwDueDate').dispatchEvent(new Event('change')); } catch(e) {}
 
         document.getElementById('modalHomework').classList.add('open');
         setTimeout(function() { document.getElementById('hwTitle').focus(); }, 100);
     }
 
-    document.getElementById('btnAddHomework').addEventListener('click', openHomeworkModal);
+    document.getElementById('btnAddHomework').addEventListener('click', function() { openHomeworkModal(); });
 
     document.getElementById('btnSaveHomework').addEventListener('click', function() {
         if (currentHwClass < 0) return;
@@ -6000,14 +6091,20 @@ var CMPDF = (function(){
         if (!dueDate) { alert('❌ تاریخ تحویل را وارد کنید.'); return; }
 
         if (!homeworkData[cls.className]) homeworkData[cls.className] = [];
-        homeworkData[cls.className].push({
-            id: genId(),
-            title: title,
-            subject: subject,
-            dueDate: dueDate,
-            description: description,
-            status: {}
-        });
+        var existing = editingHwId ? homeworkData[cls.className].filter(function(h) { return h.id === editingHwId; })[0] : null;
+        if (existing) {
+            existing.title = title; existing.subject = subject; existing.dueDate = dueDate; existing.description = description;
+        } else {
+            homeworkData[cls.className].push({
+                id: genId(),
+                title: title,
+                subject: subject,
+                dueDate: dueDate,
+                description: description,
+                status: {}
+            });
+        }
+        editingHwId = null;
         saveHomework();
         renderHomeworkList();
         closeModal('modalHomework');
@@ -6225,6 +6322,65 @@ var CMPDF = (function(){
         html += '</body></html>';
         openPrintWindow(html);
     }
+
+    // ===== گزارش تکالیف کلاس: ماتریس دانش‌آموز × تکلیف (با فیلتر درس و ماهِ صفحه) =====
+    function printClassHomeworkReport(cls) {
+        var students = cls.students || [];
+        if (students.length === 0) { alert('❌ کلاس دانش‌آموز ندارد.'); return; }
+        var rk = monthRangeKeys(hwFilterFrom, hwFilterTo);
+        var list = getClassHomeworks(cls).filter(function(h) {
+            if (hwFilterSubject && h.subject !== hwFilterSubject) return false;
+            var hm = String(h.dueDate || '').substring(0, 7);
+            if (rk.from && hm < rk.from) return false;
+            if (rk.to && hm > rk.to) return false;
+            return true;
+        });
+        if (list.length === 0) { alert('❌ تکلیفی در این بازه/فیلتر وجود ندارد.'); return; }
+        list.sort(function(a, b) { return String(a.dueDate).localeCompare(String(b.dueDate)); });
+
+        var landscape = list.length > 5;
+        var fs = list.length > 18 ? 7 : (list.length > 12 ? 8 : (list.length > 8 ? 9 : 10));
+        var L = { done: ['کامل', '#059669'], partial: ['ناقص', '#d97706'], notdone: ['نشده', '#dc2626'] };
+
+        var html = '<html><head><meta charset="UTF-8"><title>گزارش تکالیف کلاس</title><style>';
+        html += '@page { size: A4 ' + (landscape ? 'landscape' : 'portrait') + '; margin: 0.7cm 0.8cm 0.3cm 0.8cm; }';
+        html += 'body { font-family: "Vazirmatn", "B Nazanin", "Tahoma", sans-serif; direction: rtl; margin: 0; }';
+        html += '.h { text-align: center; font-weight: bold; font-size: 15pt; padding: 4px 0 6px 0; border-bottom: 1.5px solid #000; margin-bottom: 6px; }';
+        html += '.sub { text-align: center; font-size: 10pt; margin-bottom: 6px; }';
+        html += 'table { border-collapse: collapse; width: 100%; font-size: ' + fs + 'pt; }';
+        html += 'th, td { border: 1px solid #000; text-align: center; padding: 2px 3px; }';
+        html += 'th { background: #e8e8e8; font-weight: bold; vertical-align: middle; }';
+        html += 'th small { display: block; font-weight: normal; font-size: ' + Math.max(6, fs - 2) + 'pt; }';
+        html += 'td.name { text-align: right; font-weight: 600; white-space: nowrap; }';
+        html += '</style></head><body>';
+        html += '<div class="h">گزارش تکالیف کلاس ' + escapeHtml(cls.className) + '</div>';
+        html += yearLine();
+        html += '<div class="sub">بازه: ' + monthRangeText(hwFilterFrom, hwFilterTo) + (hwFilterSubject ? ' &nbsp;|&nbsp; درس: ' + escapeHtml(hwFilterSubject) : '') + ' &nbsp;|&nbsp; تعداد تکالیف: ' + toPersianNum(list.length) + '</div>';
+        html += '<table><thead><tr><th>#</th><th>نام و نام خانوادگی</th>';
+        list.forEach(function(h) {
+            html += '<th>' + escapeHtml(h.title) + '<small>' + (h.subject ? escapeHtml(h.subject) + ' - ' : '') + fmtDayMonth(h.dueDate) + '</small></th>';
+        });
+        html += '<th>کامل</th><th>ناقص</th><th>نشده</th><th>٪ انجام</th></tr></thead><tbody>';
+        students.forEach(function(st, i) {
+            var c = { done: 0, partial: 0, notdone: 0 };
+            html += '<tr><td>' + toPersianNum(i + 1) + '</td><td class="name">' + escapeHtml((st.family || '') + ' ' + (st.name || '')) + '</td>';
+            list.forEach(function(h) {
+                var v = h.status && h.status[st.id];
+                if (L[v]) { c[v]++; html += '<td style="color:' + L[v][1] + ';font-weight:bold;">' + L[v][0] + '</td>'; }
+                else html += '<td style="color:#999;">—</td>';
+            });
+            var pct = Math.round((c.done + 0.5 * c.partial) / list.length * 100);
+            html += '<td>' + toPersianNum(c.done) + '</td><td>' + toPersianNum(c.partial) + '</td><td>' + toPersianNum(c.notdone) + '</td><td><b>' + toPersianNum(pct) + '٪</b></td></tr>';
+        });
+        html += '</tbody></table>';
+        html += '<div style="margin-top:6px;font-size:' + Math.max(7, fs - 1) + 'pt;">درصد انجام = (کامل + نصفِ ناقص) ÷ تعداد تکالیف. «—» یعنی وضعیتی ثبت نشده.</div>';
+        html += '</body></html>';
+        openPrintWindow(html);
+    }
+    document.getElementById('btnHwClassReport').addEventListener('click', function() {
+        if (currentHwClass < 0) { alert('ابتدا یک کلاس انتخاب کنید.'); return; }
+        printClassHomeworkReport(appData.classes[currentHwClass]);
+    });
 
     // ═══ Hook صفحه ═══
     function homeworkPageHook() {
@@ -7189,20 +7345,19 @@ var CMPDF = (function(){
         e = document.getElementById('statTotalBehaviors'); if (e) e.textContent = toPersianNum(totalBehaviors);
         e = document.getElementById('statTotalHomework'); if (e) e.textContent = toPersianNum(totalHomework);
 
-        // حافظه
-        var totalSize = 0;
-        try {
-            localStorage.keys().forEach(function(key) {
-                totalSize += (localStorage.getItem(key) || '').length;
-            });
-        } catch(e2) {}
-        var sizeKB = Math.round(totalSize / 1024);
-        var percent = Math.min(100, Math.round((totalSize / (5 * 1024 * 1024)) * 100));
-
+        // حافظه (کل فضای مرورگر برای این برنامه، شامل همهٔ حساب‌های این دستگاه)
+        var u = window.CMStorageGuard ? window.CMStorageGuard.usage() : { used: 0, pct: 0 };
+        var sizeKB = Math.round(u.used / 1024);
         var ss = document.getElementById('statStorageUsed');
-        if (ss) ss.textContent = toPersianNum(sizeKB) + ' KB';
+        if (ss) ss.textContent = toPersianNum(sizeKB) + ' KB (' + toPersianNum(u.pct) + '٪)';
         var sb = document.getElementById('storageBarFill');
-        if (sb) sb.style.width = percent + '%';
+        if (sb) { sb.style.width = Math.max(u.pct, u.used > 0 ? 1 : 0) + '%'; sb.style.background = u.pct >= 90 ? '#dc2626' : (u.pct >= 80 ? '#f59e0b' : ''); }
+        var sw = document.getElementById('storageWarnText');
+        if (sw) {
+            if (u.pct >= 80) { sw.style.color = u.pct >= 90 ? '#dc2626' : '#d97706'; sw.style.fontWeight = '700'; sw.textContent = '⚠️ حافظه رو به پر شدن است! همین حالا پشتیبان بگیرید و داده‌های قدیمی را پاک کنید.'; }
+            else { sw.style.color = ''; sw.style.fontWeight = ''; sw.textContent = '⚠️ اگر حافظه پر شد، از داده‌های قدیمی پشتیبان بگیرید و پاک کنید. از ۸۰٪ به بعد خودکار هشدار داده می‌شود.'; }
+        }
+        if (window.CMStorageGuard) window.CMStorageGuard.check(true);
     }
 
     // ===== ذخیره تنظیمات =====
@@ -7508,7 +7663,7 @@ var CMPDF = (function(){
     /* ═══════════════════════════════════════════════════
        🔄 به‌روزرسانی از GitHub
        ═══════════════════════════════════════════════════ */
-    var APP_VERSION = '4.3.7';
+    var APP_VERSION = '4.4.0';
     var realLS = window.localStorage, UPD_KEY = 'cmupd_v1';
     var pendingUpdate = null;
 
@@ -7779,6 +7934,7 @@ var CMPDF = (function(){
 
     loadData();
     renderClasses();
+    if (window.CMStorageGuard) setTimeout(function() { window.CMStorageGuard.check(true); }, 1500);
 
     loadAttendance();
     refreshAttClassDropdown();
